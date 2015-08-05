@@ -25,7 +25,7 @@ var n int
 func init() {
 	flag.StringVar(&path, "p", "", "path to binary model data")
 	flag.StringVar(&addList, "a", "", "comma separated list of model words to add to the target vector")
-	flag.StringVar(&subList, "s", "", "comma separated list of model words to subtract form the target vector")
+	flag.StringVar(&subList, "s", "", "comma separated list of model words to subtract from the target vector")
 	flag.BoolVar(&verbose, "v", false, "show verbose output")
 	flag.IntVar(&n, "n", 10, "number of most similar matches to show")
 }
@@ -34,12 +34,12 @@ func main() {
 	flag.Parse()
 
 	if path == "" {
-		fmt.Println("must provide path to binary model data")
+		fmt.Println("must specify -p; see -h for more details")
 		os.Exit(1)
 	}
 
 	if addList == "" && subList == "" {
-		fmt.Println("must specify -add or -sub")
+		fmt.Println("must specify -a or -s; see -h for more details")
 		os.Exit(1)
 	}
 
