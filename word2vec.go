@@ -113,6 +113,18 @@ func (m *Model) Similarity(x, y string) (float32, error) {
 	return u.Dot(v), nil
 }
 
+// Vectors returns a mapping word -> Vector for each word in `w`,
+// unknown words are ignored.
+func (m *Model) Vectors(words []string) map[string]Vector {
+	result := make(map[string]Vector)
+	for _, w := range words {
+		if v, ok := m.words[w]; ok {
+			result[w] = v
+		}
+	}
+	return result
+}
+
 // Eval constructs a vector by adding and subtracting the vector values of
 // lists of words.
 func (m *Model) Eval(add []string, sub []string) (Vector, error) {
