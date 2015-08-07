@@ -95,3 +95,11 @@ func (p *Partition) EquivClass(w string) ([]string, error) {
 	}
 	return p.classes[i], nil
 }
+
+func (p *Partition) EquivClassIndex(i int) ([]string, error) {
+	c, ok := p.classes[i]
+	if !ok {
+		return nil, fmt.Errorf("equivalence class not found: %v", i)
+	}
+	return c, nil
+}
