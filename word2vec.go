@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/ziutek/blas"
 )
@@ -156,7 +157,7 @@ type Pair struct {
 
 // MostSimilar is a method which returns a list of `n` most similar vectors
 // to `v` in the model.
-func (m *Model) MostSimilar(v Vector, n int) ([]Pair, error) {
+func (m *Model) MostSimilar(v Vector, n int) []Pair {
 	r := make([]Pair, n)
 	for w, u := range m.words {
 		score := v.Dot(u)
@@ -173,5 +174,32 @@ func (m *Model) MostSimilar(v Vector, n int) ([]Pair, error) {
 			r[j], r[j+1] = p, r[j]
 		}
 	}
-	return r, nil
+	return r
+}
+
+type multiMatches struct {
+	Word    string
+	Matches []Pair
+}
+
+// MultiMostSimilar takes a map of word -> vector (see Vectors) and computes the
+// n most similar words for each.
+func MultiMostSimilar(m *Model, vecs map[string]Vector, n int) map[string][]Pair {
+	wg := &sync.WaitGroup{}
+	wg.Add(len(vecs))
+	ch := make(chan multiMatches, len(vecs))
+	for k, v := range vecs {
+		go func(k string, v Vector) {
+			ch <- multiMatches{Word: k, Matches: m.MostSimilar(v, n)}
+			wg.Done()
+		}(k, v)
+	}
+	wg.Wait()
+	close(ch)
+
+	result := make(map[string][]Pair, len(vecs))
+	for r := range ch {
+		result[r.Word] = r.Matches
+	}
+	return result
 }
