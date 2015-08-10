@@ -19,11 +19,13 @@ import (
 
 var path string
 var addList, subList string
+var multiQuery string
 var verbose bool
 var n int
 
 func init() {
 	flag.StringVar(&path, "p", "", "path to binary model data")
+	flag.StringVar(&multiQuery, "m", "", "comma separated list of model words to query at the same time")
 	flag.StringVar(&addList, "a", "", "comma separated list of model words to add to the target vector")
 	flag.StringVar(&subList, "s", "", "comma separated list of model words to subtract from the target vector")
 	flag.BoolVar(&verbose, "v", false, "show verbose output")
@@ -38,8 +40,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if addList == "" && subList == "" {
-		fmt.Println("must specify -a or -s; see -h for more details")
+	if addList == "" && subList == "" && multiQuery == "" {
+		fmt.Println("must specify -a, -s, or -m; see -h for more details")
 		os.Exit(1)
 	}
 
@@ -54,6 +56,18 @@ func main() {
 	if err != nil {
 		fmt.Printf("error reading binary model data: %v\n", err)
 		os.Exit(1)
+	}
+
+	// TODO(dhowden): Tidy this up, it's rather hacked in here!
+	if multiQuery != "" {
+		multiWords := strings.Split(multiQuery, ",")
+		vecs := m.Vectors(multiWords)
+
+		before := time.Now()
+		res := word2vec.MultiMostSimilar(m, vecs, 10)
+		fmt.Println("Total time:", time.Since(before))
+		fmt.Println(res)
+		return
 	}
 
 	var adds, subs []string
@@ -80,7 +94,7 @@ func main() {
 	}
 
 	before := time.Now()
-	pairs, err := m.MostSimilar(v, n)
+	pairs := m.MostSimilar(v, n)
 	if err != nil {
 		fmt.Printf("error finding most similar: %v\n", err)
 		os.Exit(1)
