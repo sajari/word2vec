@@ -148,20 +148,20 @@ func (m *Model) Eval(add []string, sub []string) (Vector, error) {
 	return v, nil
 }
 
-// Pair is a type which represents a pairing of a word and score indicating
+// Match is a type which represents a pairing of a word and score indicating
 // the similarity of this word against a search word.
-type Pair struct {
+type Match struct {
 	Word  string
 	Score float32
 }
 
 // MostSimilar is a method which returns a list of `n` most similar vectors
 // to `v` in the model.
-func (m *Model) MostSimilar(v Vector, n int) []Pair {
-	r := make([]Pair, n)
+func (m *Model) MostSimilar(v Vector, n int) []Match {
+	r := make([]Match, n)
 	for w, u := range m.words {
 		score := v.Dot(u)
-		p := Pair{w, score}
+		p := Match{w, score}
 		// TODO(dhowden): MaxHeap would be better here if n is large.
 		if r[n-1].Score > p.Score {
 			continue
@@ -179,12 +179,12 @@ func (m *Model) MostSimilar(v Vector, n int) []Pair {
 
 type multiMatches struct {
 	Word    string
-	Matches []Pair
+	Matches []Match
 }
 
 // MultiMostSimilar takes a map of word -> vector (see Vectors) and computes the
 // n most similar words for each.
-func MultiMostSimilar(m *Model, vecs map[string]Vector, n int) map[string][]Pair {
+func MultiMostSimilar(m *Model, vecs map[string]Vector, n int) map[string][]Match {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(vecs))
 	ch := make(chan multiMatches, len(vecs))
@@ -197,7 +197,7 @@ func MultiMostSimilar(m *Model, vecs map[string]Vector, n int) map[string][]Pair
 	wg.Wait()
 	close(ch)
 
-	result := make(map[string][]Pair, len(vecs))
+	result := make(map[string][]Match, len(vecs))
 	for r := range ch {
 		result[r.Word] = r.Matches
 	}
