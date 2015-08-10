@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/sajari/word2vec"
 )
@@ -16,13 +17,33 @@ import (
 var path string
 var query string
 var class int
+var dist bool
 var info bool
 
 func init() {
 	flag.StringVar(&path, "p", "", "path to classes text data")
 	flag.StringVar(&query, "q", "", "word to fetch class")
 	flag.IntVar(&class, "c", 0, "class to fetch")
+	flag.BoolVar(&dist, "d", false, "show distribution of classes")
 	flag.BoolVar(&info, "i", false, "only show info about the word class and partition")
+}
+
+type classCount struct {
+	class, total int
+}
+
+type classCountSlice []classCount
+
+func (c classCountSlice) Less(i, j int) bool {
+	return c[i].total < c[j].total
+}
+
+func (c classCountSlice) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c classCountSlice) Len() int {
+	return len(c)
 }
 
 func main() {
@@ -33,8 +54,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if query == "" && class == 0 {
-		fmt.Println("must specify -q or -c; see -h for more details")
+	if query == "" && class == 0 && !dist {
+		fmt.Println("must specify -q, -c or -d; see -h for more details")
 		os.Exit(1)
 	}
 
@@ -49,6 +70,26 @@ func main() {
 	if err != nil {
 		fmt.Printf("error reading classes data: %v\n", err)
 		os.Exit(1)
+	}
+
+	if dist {
+		n := p.Classes()
+		s := make([]classCount, 0, n)
+		for i := 0; i < n; i++ {
+			cl, err := p.EquivClassIndex(i)
+			if err != nil {
+				fmt.Printf("no class for index: %v\n", i)
+				os.Exit(1)
+			}
+			s = append(s, classCount{i, len(cl)})
+		}
+
+		sort.Sort(sort.Reverse(classCountSlice(s)))
+
+		fmt.Println("class\t\ttotal")
+		for _, cc := range s {
+			fmt.Printf("%v\t\t%v\n", cc.class, cc.total)
+		}
 	}
 
 	var c []string
