@@ -43,11 +43,11 @@ func (q SimQuery) Eval(m *Model) (*SimResponse, error) {
 	}, nil
 }
 
-type SimQueries struct {
+type MultiSimQuery struct {
 	Queries []SimQuery `json:"queries"`
 }
 
-func (qs SimQueries) Eval(m *Model) ([]*SimResponse, error) {
+func (qs MultiSimQuery) Eval(m *Model) ([]*SimResponse, error) {
 	resp := make([]*SimResponse, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
