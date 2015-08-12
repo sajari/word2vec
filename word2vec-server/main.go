@@ -42,7 +42,8 @@ func main() {
 
 	ms := word2vec.ModelServer{m}
 
-	http.HandleFunc("/", ms.HandleQuery)
+	http.HandleFunc("/most-sim", ms.HandleMostSimQuery)
+	http.HandleFunc("/sim", ms.HandleSimQuery)
 	
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")

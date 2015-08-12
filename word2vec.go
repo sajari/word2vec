@@ -126,6 +126,10 @@ func (m *Model) Vectors(words []string) map[string]Vector {
 	return result
 }
 
+func (m *Model) Sim(u, v Vector) float32 {
+	return u.Dot(v)
+}
+
 // Eval constructs a vector by adding and subtracting the vector values of
 // lists of words.
 func (m *Model) Eval(add []string, sub []string) (Vector, error) {
@@ -151,8 +155,8 @@ func (m *Model) Eval(add []string, sub []string) (Vector, error) {
 // Match is a type which represents a pairing of a word and score indicating
 // the similarity of this word against a search word.
 type Match struct {
-	Word  string
-	Score float32
+	Word  string  `json:"word"`
+	Score float32 `json:"score"`
 }
 
 // MostSimilar is a method which returns a list of `n` most similar vectors
