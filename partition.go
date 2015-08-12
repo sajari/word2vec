@@ -29,7 +29,7 @@ func NewPartition(r io.Reader) (*Partition, error) {
 
 		fields := strings.Fields(line)
 		if len(fields) != 2 {
-			return nil, fmt.Errorf("[line: %d] expected 2 fields, instead got: ", i+1, len(fields))
+			return nil, fmt.Errorf("[line: %d] expected 2 fields, instead got: %v", i+1, len(fields))
 		}
 
 		w := fields[0]

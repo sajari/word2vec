@@ -117,7 +117,7 @@ func (m *ModelServer) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(b)
 	if err != nil {
-		log.Println("error writing response: %v", err)
+		log.Printf("error writing response: %v", err)
 	}
 }
 
@@ -149,6 +149,6 @@ func (m *ModelServer) HandleMostSimQuery(w http.ResponseWriter, r *http.Request)
 
 	_, err = w.Write(b)
 	if err != nil {
-		log.Println("error writing response: %v", err)
+		log.Printf("error writing response: %v", err)
 	}
 }
