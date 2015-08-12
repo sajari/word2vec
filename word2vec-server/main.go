@@ -40,13 +40,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	ms := word2vec.ModelServer{m}
+	ms := word2vec.ModelServer{Model: m}
 
 	http.HandleFunc("/most-sim", ms.HandleMostSimQuery)
 	http.HandleFunc("/sim", ms.HandleSimQuery)
-	
+
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")
-	
+
 	log.Fatal(http.ListenAndServe(listen, nil))
 }
