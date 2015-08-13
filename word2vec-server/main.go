@@ -42,8 +42,12 @@ func main() {
 
 	ms := word2vec.ModelServer{Model: m}
 
+	// Most-similar matching endpoints
 	http.HandleFunc("/most-sim", ms.HandleMostSimQuery)
+
+	// Similarity comparison endpoints
 	http.HandleFunc("/sim", ms.HandleSimQuery)
+	http.HandleFunc("/sim-multi", ms.HandleMultiSimQuery)
 
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")

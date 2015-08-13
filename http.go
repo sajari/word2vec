@@ -47,16 +47,22 @@ type MultiSimQuery struct {
 	Queries []SimQuery `json:"queries"`
 }
 
-func (qs MultiSimQuery) Eval(m *Model) ([]*SimResponse, error) {
-	resp := make([]*SimResponse, len(qs.Queries))
+type MultiSimResponse struct {
+	Values []SimResponse `json:"values"`
+}
+
+func (qs MultiSimQuery) Eval(m *Model) (*MultiSimResponse, error) {
+	values := make([]SimResponse, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
 		if err != nil {
 			return nil, err
 		}
-		resp[i] = r
+		values[i] = *r
 	}
-	return resp, nil
+	return &MultiSimResponse{
+		Values: values,
+	}, nil
 }
 
 type MostSimQuery struct {
@@ -94,6 +100,38 @@ func (m *ModelServer) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var q SimQuery
+	err := dec.Decode(&q)
+	if err != nil {
+		msg := fmt.Sprintf("error decoding query: %v", err)
+		handleError(w, r, http.StatusInternalServerError, msg)
+		return
+	}
+
+	resp, err := q.Eval(m.Model)
+	if err != nil {
+		msg := fmt.Sprintf("error evaluating query: %v", err)
+		handleError(w, r, http.StatusBadRequest, msg)
+		return
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		msg := fmt.Sprintf("error encoding response %#v to JSON: %v", resp, err)
+		handleError(w, r, http.StatusInternalServerError, msg)
+		return
+	}
+
+	_, err = w.Write(b)
+	if err != nil {
+		log.Printf("error writing response: %v", err)
+	}
+}
+
+func (m *ModelServer) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
+	dec := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	var q MultiSimQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
