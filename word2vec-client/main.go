@@ -21,8 +21,8 @@ func init() {
 	flag.StringVar(&addr, "addr", "", "path to binary model data")
 	flag.StringVar(&addListA, "addA", "", "comma separated list of model words to add to the target vector A")
 	flag.StringVar(&subListA, "subA", "", "comma separated list of model words to subtract from the target vector A")
-	flag.StringVar(&addListB, "addB", "", "comma separated list of model words to add to the target vector A")
-	flag.StringVar(&subListB, "subB", "", "comma separated list of model words to subtract from the target vector A")
+	flag.StringVar(&addListB, "addB", "", "comma separated list of model words to add to the target vector B")
+	flag.StringVar(&subListB, "subB", "", "comma separated list of model words to subtract from the target vector B")
 }
 
 func makeExpr(addList, subList string) (word2vec.Expr, error) {
@@ -49,8 +49,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	c := word2vec.Client{Addr: addr}
-
 	exprA, err := makeExpr(addListA, subListA)
 	if err != nil {
 		fmt.Printf("error creating target vector for 'A': %v\n", err)
@@ -59,9 +57,11 @@ func main() {
 
 	exprB, err := makeExpr(addListB, subListB)
 	if err != nil {
-		fmt.Printf("error creating target vector for 'A': %v\n", err)
+		fmt.Printf("error creating target vector for 'B': %v\n", err)
 		os.Exit(1)
 	}
+
+	c := word2vec.Client{Addr: addr}
 
 	start := time.Now()
 	v, err := c.Sim(exprA, exprB)
