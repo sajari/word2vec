@@ -1,15 +1,17 @@
 package word2vec
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
 
 type Expr struct {
-	Add []string `json:"add"`
-	Sub []string `json:"sub"`
+	Add []string `json:"add,omitempty"`
+	Sub []string `json:"sub,omitempty"`
 }
 
 func (e Expr) Eval(m *Model) (Vector, error) {
@@ -20,8 +22,8 @@ func (e Expr) Eval(m *Model) (Vector, error) {
 }
 
 type SimQuery struct {
-	A Expr `json:"a"`
-	B Expr `json:"b"`
+	A Expr `json:"a,omitempty"`
+	B Expr `json:"b,omitempty"`
 }
 
 type SimResponse struct {
@@ -189,4 +191,45 @@ func (m *ModelServer) HandleMostSimQuery(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Printf("error writing response: %v", err)
 	}
+}
+
+type Client struct {
+	Addr string
+}
+
+func (c Client) Sim(x, y Expr) (float32, error) {
+	req := SimQuery{A: x, B: y}
+
+	b, err := json.Marshal(req)
+	if err != nil {
+		return 0.0, err
+	}
+
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/sim", bytes.NewReader(b))
+	if err != nil {
+		return 0.0, err
+	}
+
+	resp, err := http.DefaultClient.Do(r)
+	if err != nil {
+		return 0.0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0.0, fmt.Errorf("non-%v status code: %v", http.StatusOK, resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0.0, fmt.Errorf("error reading response: %v", err)
+	}
+
+	var data SimResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return 0.0, fmt.Errorf("error unmarshalling result: %v", err)
+	}
+
+	return data.Value, nil
 }
