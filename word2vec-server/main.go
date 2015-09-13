@@ -14,7 +14,7 @@ var listen string
 var path string
 
 func init() {
-	flag.StringVar(&listen, "listen", "", "bind address for HTTP server")
+	flag.StringVar(&listen, "listen", "localhost:1234", "bind address for HTTP server")
 	flag.StringVar(&path, "p", "", "path to binary model data")
 }
 

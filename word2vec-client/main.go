@@ -18,7 +18,7 @@ var addListA, subListA string
 var addListB, subListB string
 
 func init() {
-	flag.StringVar(&addr, "addr", "", "path to binary model data")
+	flag.StringVar(&addr, "addr", "localhost:1234", "server address")
 	flag.StringVar(&addListA, "addA", "", "comma separated list of model words to add to the target vector A")
 	flag.StringVar(&subListA, "subA", "", "comma separated list of model words to subtract from the target vector A")
 	flag.StringVar(&addListB, "addB", "", "comma separated list of model words to add to the target vector B")
