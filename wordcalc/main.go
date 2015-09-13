@@ -106,6 +106,6 @@ func main() {
 	}
 
 	for _, k := range pairs {
-		fmt.Printf("%v\t %#v\n", k.Score, k.Word)
+		fmt.Printf("%9f\t%#v\n", k.Score, k.Word)
 	}
 }
