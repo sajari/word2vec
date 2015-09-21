@@ -76,6 +76,21 @@ func (q SimNQuery) Eval(m *Model) (*SimNResponse, error) {
 
 type ModelServer struct {
 	*Model
+	*http.ServeMux
+}
+
+func NewModelServer(m *Model) http.Handler {
+	ms := &ModelServer{
+		Model: m,
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/sim-n", ms.HandleSimNQuery)
+	mux.HandleFunc("/sim", ms.HandleSimQuery)
+	mux.HandleFunc("/sim-multi", ms.HandleMultiSimQuery)
+
+	ms.ServeMux = mux
+	return ms
 }
 
 func handleError(w http.ResponseWriter, r *http.Request, status int, msg string) {

@@ -40,17 +40,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	ms := word2vec.ModelServer{Model: m}
-
-	// Most-similar matching endpoints
-	http.HandleFunc("/most-sim", ms.HandleSimNQuery)
-
-	// Similarity comparison endpoints
-	http.HandleFunc("/sim", ms.HandleSimQuery)
-	http.HandleFunc("/sim-multi", ms.HandleMultiSimQuery)
+	ms := word2vec.NewModelServer(m)
 
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")
 
-	log.Fatal(http.ListenAndServe(listen, nil))
+	log.Fatal(http.ListenAndServe(listen, ms))
 }
