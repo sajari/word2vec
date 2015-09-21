@@ -117,6 +117,18 @@ func (e Expr) Eval(m *Model) (Vector, error) {
 	return m.Eval(e)
 }
 
+// Evaluator is an interface which defines methods which can evaluate Expr.
+type Evaluator interface {
+	// Cosine computes the cosine similarity of the expressions.
+	Cosine(e, f Expr) (float32, error)
+
+	// Cosines computes the cosine similarity of all pairs of expressions.
+	Cosines(pairs [][2]Expr) ([]float32, error)
+
+	// CosineN computes the N most similar words to the expression.
+	CosineN(e Expr, n int) ([]Match, error)
+}
+
 // Size returns the number of words in the model.
 func (m *Model) Size() int {
 	return len(m.words)
