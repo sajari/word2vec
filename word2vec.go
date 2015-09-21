@@ -127,26 +127,6 @@ func (m *Model) Dim() int {
 	return m.dim
 }
 
-// Cosine returns the similarity between the two words.
-func Cosine(m *Model, x, y string) (float32, error) {
-	a := Expr{}
-	a.Add(1, x)
-
-	b := Expr{}
-	b.Add(1, y)
-
-	u, err := m.Eval(a)
-	if err != nil {
-		return 0.0, err
-	}
-
-	v, err := m.Eval(b)
-	if err != nil {
-		return 0.0, err
-	}
-	return u.Dot(v), nil
-}
-
 // Vectors returns a mapping word -> Vector for each word in `w`,
 // unknown words are ignored.
 func (m *Model) Vectors(words []string) map[string]Vector {
