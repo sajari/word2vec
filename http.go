@@ -285,3 +285,40 @@ func (c Client) MultiSim(pairs [][2]Expr) ([]float32, error) {
 	}
 	return result, nil
 }
+
+func (c Client) SimN(e Expr, n int) ([]Match, error) {
+	req := SimNQuery{Expr: e, N: n}
+
+	b, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/sim-n", bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-%v status code: %v", http.StatusOK, resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+
+	var data SimNResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling result: %v", err)
+	}
+
+	return data.Matches, nil
+}
