@@ -130,6 +130,20 @@ func (m *Model) Sim(u, v Vector) float32 {
 	return u.Dot(v)
 }
 
+// Evaluate constructs a vector by evaluating the mapping word -> coeff to a single
+// vector.  Returns an error if a word is not in the model.
+func (m *Model) Evaluate(expr Expr) (Vector, error) {
+	v := Vector(make([]float32, m.dim))
+	for w, c := range expr {
+		u, ok := m.words[w]
+		if !ok {
+			return nil, &NotFoundError{w}
+		}
+		v.Add(c, u)
+	}
+	return v, nil
+}
+
 // Eval constructs a vector by adding and subtracting the vector values of
 // lists of words.
 func (m *Model) Eval(add []string, sub []string) (Vector, error) {
