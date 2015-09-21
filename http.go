@@ -19,17 +19,13 @@ type SimResponse struct {
 }
 
 func (q SimQuery) Eval(m *Model) (*SimResponse, error) {
-	v, err := q.A.Eval(m)
-	if err != nil {
-		return nil, err
-	}
-	u, err := q.B.Eval(m)
+	v, err := m.Sim(q.A, q.B)
 	if err != nil {
 		return nil, err
 	}
 
 	return &SimResponse{
-		Value: m.Sim(u, v),
+		Value: v,
 	}, nil
 }
 
@@ -65,12 +61,13 @@ type SimNResponse struct {
 }
 
 func (q SimNQuery) Eval(m *Model) (*SimNResponse, error) {
-	v, err := q.Expr.Eval(m)
+	r, err := m.SimN(q.Expr, q.N)
 	if err != nil {
 		return nil, err
 	}
+
 	return &SimNResponse{
-		Matches: m.SimN(v, q.N),
+		Matches: r,
 	}, nil
 }
 

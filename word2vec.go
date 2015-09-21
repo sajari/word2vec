@@ -159,8 +159,18 @@ func (m *Model) Vectors(words []string) map[string]Vector {
 	return result
 }
 
-func (m *Model) Sim(u, v Vector) float32 {
-	return u.Dot(v)
+// Sim returns the cosine similarity of the given expressions.
+func (m *Model) Sim(a, b Expr) (float32, error) {
+	u, err := a.Eval(m)
+	if err != nil {
+		return 0, err
+	}
+
+	v, err := b.Eval(m)
+	if err != nil {
+		return 0, err
+	}
+	return u.Dot(v), nil
 }
 
 // Eval constructs a vector by evaluating the expression
@@ -174,15 +184,8 @@ func (m *Model) Eval(expr Expr) (Vector, error) {
 		}
 		v.Add(c, u)
 	}
+	v.Normalise()
 	return v, nil
-}
-
-// Eval is a convenience method which
-func Evaluate(m *Model, add []string, sub []string) (Vector, error) {
-	e := Expr{}
-	AddAll(e, 1, add)
-	AddAll(e, -1, sub)
-	return e.Eval(m)
 }
 
 // Match is a type which represents a pairing of a word and score indicating
@@ -192,9 +195,20 @@ type Match struct {
 	Score float32 `json:"score"`
 }
 
-// SimN is a method which returns a list of `n` most similar vectors
-// to `v` in the model.
-func (m *Model) SimN(v Vector, n int) []Match {
+// SimN computes the n most similar words to the expression.  Returns an error if the
+// expression could not be evaluated.
+func (m *Model) SimN(e Expr, n int) ([]Match, error) {
+	v, err := e.Eval(m)
+	if err != nil {
+		return nil, err
+	}
+
+	v.Normalise()
+	return m.simN(v, n), nil
+}
+
+// simN is a method which returns a list of `n` most similar vectors to `v` in the model.
+func (m *Model) simN(v Vector, n int) []Match {
 	r := make([]Match, n)
 	for w, u := range m.words {
 		score := v.Dot(u)
@@ -215,28 +229,37 @@ func (m *Model) SimN(v Vector, n int) []Match {
 }
 
 type multiMatches struct {
-	Word    string
+	N       int
 	Matches []Match
 }
 
-// MultiSimN takes a map of word -> vector (see Vectors) and computes the
+// MultiSimN takes a list of expressions and computes the
 // n most similar words for each.
-func MultiSimN(m *Model, vecs map[string]Vector, n int) map[string][]Match {
+func MultiSimN(m *Model, exprs []Expr, n int) ([][]Match, error) {
+	vecs := make([]Vector, len(exprs))
+	for i, e := range exprs {
+		v, err := e.Eval(m)
+		if err != nil {
+			return nil, err
+		}
+		vecs[i] = v
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(len(vecs))
 	ch := make(chan multiMatches, len(vecs))
-	for k, v := range vecs {
-		go func(k string, v Vector) {
-			ch <- multiMatches{Word: k, Matches: m.SimN(v, n)}
+	for i, v := range vecs {
+		go func(i int, v Vector) {
+			ch <- multiMatches{N: i, Matches: m.simN(v, n)}
 			wg.Done()
-		}(k, v)
+		}(i, v)
 	}
 	wg.Wait()
 	close(ch)
 
-	result := make(map[string][]Match, len(vecs))
+	result := make([][]Match, len(vecs))
 	for r := range ch {
-		result[r.Word] = r.Matches
+		result[r.N] = r.Matches
 	}
-	return result
+	return result, nil
 }

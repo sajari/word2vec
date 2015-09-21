@@ -60,11 +60,22 @@ func main() {
 
 	// TODO(dhowden): Tidy this up, it's rather hacked in here!
 	if multiQuery != "" {
+		var exprs []word2vec.Expr
+
 		multiWords := strings.Split(multiQuery, ",")
-		vecs := m.Vectors(multiWords)
+		for _, w := range multiWords {
+			e := word2vec.Expr{}
+			e.Add(1, w)
+
+			exprs = append(exprs, e)
+		}
 
 		before := time.Now()
-		res := word2vec.MultiSimN(m, vecs, 10)
+		res, err := word2vec.MultiSimN(m, exprs, 10)
+		if err != nil {
+			fmt.Println("error retrieving multi sim: %v", err)
+			os.Exit(1)
+		}
 		fmt.Println("Total time:", time.Since(before))
 		fmt.Println(res)
 		return
@@ -82,18 +93,17 @@ func main() {
 		fmt.Printf("Expr: %#v\n", expr)
 	}
 
-	v, err := expr.Eval(m)
-	if err != nil {
-		fmt.Printf("error creating target vector: %v\n", err)
-		os.Exit(1)
-	}
-
 	if verbose {
+		v, err := expr.Eval(m)
+		if err != nil {
+			fmt.Printf("error creating target vector: %v", err)
+			os.Exit(1)
+		}
 		fmt.Printf("Target vector: %#v\n", v)
 	}
 
 	before := time.Now()
-	pairs := m.SimN(v, n)
+	pairs, err := m.SimN(expr, n)
 	if err != nil {
 		fmt.Printf("error finding most similar: %v\n", err)
 		os.Exit(1)
