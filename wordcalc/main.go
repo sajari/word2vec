@@ -71,7 +71,7 @@ func main() {
 		}
 
 		before := time.Now()
-		res, err := word2vec.MultiSimN(m, exprs, 10)
+		res, err := word2vec.MultiCosineN(m, exprs, 10)
 		if err != nil {
 			fmt.Println("error retrieving multi sim: %v", err)
 			os.Exit(1)
@@ -103,7 +103,7 @@ func main() {
 	}
 
 	before := time.Now()
-	pairs, err := m.SimN(expr, n)
+	pairs, err := m.CosineN(expr, n)
 	if err != nil {
 		fmt.Printf("error finding most similar: %v\n", err)
 		os.Exit(1)

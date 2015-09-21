@@ -127,8 +127,8 @@ func (m *Model) Dim() int {
 	return m.dim
 }
 
-// Sim returns the similarity between the two words.
-func Sim(m *Model, x, y string) (float32, error) {
+// Cosine returns the similarity between the two words.
+func Cosine(m *Model, x, y string) (float32, error) {
 	a := Expr{}
 	a.Add(1, x)
 
@@ -159,8 +159,8 @@ func (m *Model) Vectors(words []string) map[string]Vector {
 	return result
 }
 
-// Sim returns the cosine similarity of the given expressions.
-func (m *Model) Sim(a, b Expr) (float32, error) {
+// Cosine returns the cosine similarity of the given expressions.
+func (m *Model) Cosine(a, b Expr) (float32, error) {
 	u, err := a.Eval(m)
 	if err != nil {
 		return 0, err
@@ -195,9 +195,9 @@ type Match struct {
 	Score float32 `json:"score"`
 }
 
-// SimN computes the n most similar words to the expression.  Returns an error if the
+// CosineN computes the n most similar words to the expression.  Returns an error if the
 // expression could not be evaluated.
-func (m *Model) SimN(e Expr, n int) ([]Match, error) {
+func (m *Model) CosineN(e Expr, n int) ([]Match, error) {
 	v, err := e.Eval(m)
 	if err != nil {
 		return nil, err
@@ -233,9 +233,9 @@ type multiMatches struct {
 	Matches []Match
 }
 
-// MultiSimN takes a list of expressions and computes the
+// MultiCosineN takes a list of expressions and computes the
 // n most similar words for each.
-func MultiSimN(m *Model, exprs []Expr, n int) ([][]Match, error) {
+func MultiCosineN(m *Model, exprs []Expr, n int) ([][]Match, error) {
 	vecs := make([]Vector, len(exprs))
 	for i, e := range exprs {
 		v, err := e.Eval(m)

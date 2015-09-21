@@ -67,12 +67,12 @@ func main() {
 	c := word2vec.Client{Addr: addr}
 
 	start := time.Now()
-	v, err := c.Sim(exprA, exprB)
+	v, err := c.Cosine(exprA, exprB)
 	totalTime := time.Since(start)
 	if err != nil {
 		fmt.Printf("error looking up similarity: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Similarity: %v (took: %v)\n", v, totalTime)
+	fmt.Printf("cosine similarity: %v (took: %v)\n", v, totalTime)
 }

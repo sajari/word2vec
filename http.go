@@ -9,36 +9,36 @@ import (
 	"net/http"
 )
 
-type SimQuery struct {
+type CosineQuery struct {
 	A Expr `json:"a,omitempty"`
 	B Expr `json:"b,omitempty"`
 }
 
-type SimResponse struct {
+type CosineResponse struct {
 	Value float32 `json:"value"`
 }
 
-func (q SimQuery) Eval(m *Model) (*SimResponse, error) {
-	v, err := m.Sim(q.A, q.B)
+func (q CosineQuery) Eval(m *Model) (*CosineResponse, error) {
+	v, err := m.Cosine(q.A, q.B)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SimResponse{
+	return &CosineResponse{
 		Value: v,
 	}, nil
 }
 
-type MultiSimQuery struct {
-	Queries []SimQuery `json:"queries"`
+type MultiCosineQuery struct {
+	Queries []CosineQuery `json:"queries"`
 }
 
-type MultiSimResponse struct {
-	Values []SimResponse `json:"values"`
+type MultiCosineResponse struct {
+	Values []CosineResponse `json:"values"`
 }
 
-func (qs MultiSimQuery) Eval(m *Model) (*MultiSimResponse, error) {
-	values := make([]SimResponse, len(qs.Queries))
+func (qs MultiCosineQuery) Eval(m *Model) (*MultiCosineResponse, error) {
+	values := make([]CosineResponse, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
 		if err != nil {
@@ -46,27 +46,27 @@ func (qs MultiSimQuery) Eval(m *Model) (*MultiSimResponse, error) {
 		}
 		values[i] = *r
 	}
-	return &MultiSimResponse{
+	return &MultiCosineResponse{
 		Values: values,
 	}, nil
 }
 
-type SimNQuery struct {
+type CosineNQuery struct {
 	Expr Expr `json:"expr"`
 	N    int  `json:"n"`
 }
 
-type SimNResponse struct {
+type CosineNResponse struct {
 	Matches []Match `json:"matches"`
 }
 
-func (q SimNQuery) Eval(m *Model) (*SimNResponse, error) {
-	r, err := m.SimN(q.Expr, q.N)
+func (q CosineNQuery) Eval(m *Model) (*CosineNResponse, error) {
+	r, err := m.CosineN(q.Expr, q.N)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SimNResponse{
+	return &CosineNResponse{
 		Matches: r,
 	}, nil
 }
@@ -82,9 +82,9 @@ func NewServer(m *Model) http.Handler {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/sim-n", ms.handleSimNQuery)
-	mux.HandleFunc("/sim", ms.handleSimQuery)
-	mux.HandleFunc("/sim-multi", ms.handleMultiSimQuery)
+	mux.HandleFunc("/cosine-n", ms.handleCosineNQuery)
+	mux.HandleFunc("/cosine", ms.handleCosineQuery)
+	mux.HandleFunc("/cosine-multi", ms.handleMultiCosineQuery)
 
 	ms.ServeMux = mux
 	return ms
@@ -97,11 +97,11 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 	return
 }
 
-func (m *Server) handleSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleCosineQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q SimQuery
+	var q CosineQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -129,11 +129,11 @@ func (m *Server) handleSimQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) handleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleMultiCosineQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q MultiSimQuery
+	var q MultiCosineQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -161,11 +161,11 @@ func (m *Server) handleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) handleSimNQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleCosineNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q SimNQuery
+	var q CosineNQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -197,15 +197,15 @@ type Client struct {
 	Addr string
 }
 
-func (c Client) Sim(x, y Expr) (float32, error) {
-	req := SimQuery{A: x, B: y}
+func (c Client) Cosine(x, y Expr) (float32, error) {
+	req := CosineQuery{A: x, B: y}
 
 	b, err := json.Marshal(req)
 	if err != nil {
 		return 0.0, err
 	}
 
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/sim", bytes.NewReader(b))
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cosine", bytes.NewReader(b))
 	if err != nil {
 		return 0.0, err
 	}
@@ -225,7 +225,7 @@ func (c Client) Sim(x, y Expr) (float32, error) {
 		return 0.0, fmt.Errorf("error reading response: %v", err)
 	}
 
-	var data SimResponse
+	var data CosineResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return 0.0, fmt.Errorf("error unmarshalling result: %v", err)
@@ -234,12 +234,12 @@ func (c Client) Sim(x, y Expr) (float32, error) {
 	return data.Value, nil
 }
 
-func (c Client) MultiSim(pairs [][2]Expr) ([]float32, error) {
-	req := MultiSimQuery{
-		Queries: make([]SimQuery, len(pairs)),
+func (c Client) MultiCosine(pairs [][2]Expr) ([]float32, error) {
+	req := MultiCosineQuery{
+		Queries: make([]CosineQuery, len(pairs)),
 	}
 	for _, pair := range pairs {
-		req.Queries = append(req.Queries, SimQuery{
+		req.Queries = append(req.Queries, CosineQuery{
 			A: pair[0],
 			B: pair[1],
 		})
@@ -250,7 +250,7 @@ func (c Client) MultiSim(pairs [][2]Expr) ([]float32, error) {
 		return nil, err
 	}
 
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/sim-multi", bytes.NewReader(b))
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cosine-multi", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (c Client) MultiSim(pairs [][2]Expr) ([]float32, error) {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
-	var data MultiSimResponse
+	var data MultiCosineResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
@@ -283,15 +283,15 @@ func (c Client) MultiSim(pairs [][2]Expr) ([]float32, error) {
 	return result, nil
 }
 
-func (c Client) SimN(e Expr, n int) ([]Match, error) {
-	req := SimNQuery{Expr: e, N: n}
+func (c Client) CosineN(e Expr, n int) ([]Match, error) {
+	req := CosineNQuery{Expr: e, N: n}
 
 	b, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/sim-n", bytes.NewReader(b))
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cosine-n", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +311,7 @@ func (c Client) SimN(e Expr, n int) ([]Match, error) {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
-	var data SimNResponse
+	var data CosineNResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
