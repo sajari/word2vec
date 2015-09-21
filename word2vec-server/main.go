@@ -40,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ms := word2vec.NewModelServer(m)
+	ms := word2vec.NewServer(m)
 
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")

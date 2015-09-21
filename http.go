@@ -74,13 +74,13 @@ func (q SimNQuery) Eval(m *Model) (*SimNResponse, error) {
 	}, nil
 }
 
-type ModelServer struct {
+type Server struct {
 	*Model
 	*http.ServeMux
 }
 
-func NewModelServer(m *Model) http.Handler {
-	ms := &ModelServer{
+func NewServer(m *Model) http.Handler {
+	ms := &Server{
 		Model: m,
 	}
 
@@ -100,7 +100,7 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 	return
 }
 
-func (m *ModelServer) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -132,7 +132,7 @@ func (m *ModelServer) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *ModelServer) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -164,7 +164,7 @@ func (m *ModelServer) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (m *ModelServer) HandleSimNQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) HandleSimNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
