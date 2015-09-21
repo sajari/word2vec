@@ -32,12 +32,15 @@ func makeExpr(addList, subList string) (word2vec.Expr, error) {
 
 	result := word2vec.Expr{}
 	if addList != "" {
-		result.Add = strings.Split(addList, ",")
+		for _, w := range strings.Split(addList, ",") {
+			result.Add(1, w)
+		}
 	}
 	if subList != "" {
-		result.Sub = strings.Split(subList, ",")
+		for _, w := range strings.Split(subList, ",") {
+			result.Add(-1, w)
+		}
 	}
-
 	return result, nil
 }
 
