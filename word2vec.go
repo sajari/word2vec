@@ -91,6 +91,33 @@ func (e NotFoundError) Error() string {
 	return fmt.Sprintf("word not found: %v", e.Word)
 }
 
+// Expr is a type which represents a linear expresssion which can be evaluated to a vector
+// by a word2vec Model.
+type Expr map[string]float32
+
+// Add appends the given word with coefficient to the expression.  If the word already exists
+// in the expression, then the coefficients are added.
+func (e Expr) Add(f float32, w string) {
+	e[w] += f
+}
+
+// AddAll is a convenience method which adds all the words in the slice to the Expr, using the given
+// coefficient.
+func AddAll(e Expr, f float32, ws []string) {
+	for _, w := range ws {
+		e.Add(f, w)
+	}
+}
+
+// Eval evaluates the Expr to a Vector using a Model.
+func (e Expr) Eval(m *Model) (Vector, error) {
+	if len(e) == 0 {
+		return nil, fmt.Errorf("must specify at least one word to evaluate")
+	}
+	return m.Evaluate(e)
+}
+
+
 // Size returns the number of words in the model.
 func (m *Model) Size() int {
 	return len(m.words)
