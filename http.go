@@ -85,9 +85,9 @@ func NewServer(m *Model) http.Handler {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/sim-n", ms.HandleSimNQuery)
-	mux.HandleFunc("/sim", ms.HandleSimQuery)
-	mux.HandleFunc("/sim-multi", ms.HandleMultiSimQuery)
+	mux.HandleFunc("/sim-n", ms.handleSimNQuery)
+	mux.HandleFunc("/sim", ms.handleSimQuery)
+	mux.HandleFunc("/sim-multi", ms.handleMultiSimQuery)
 
 	ms.ServeMux = mux
 	return ms
@@ -100,7 +100,7 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 	return
 }
 
-func (m *Server) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleSimQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -132,7 +132,7 @@ func (m *Server) HandleSimQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -164,7 +164,7 @@ func (m *Server) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) HandleSimNQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleSimNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
