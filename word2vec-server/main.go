@@ -43,7 +43,7 @@ func main() {
 	ms := word2vec.ModelServer{Model: m}
 
 	// Most-similar matching endpoints
-	http.HandleFunc("/most-sim", ms.HandleMostSimQuery)
+	http.HandleFunc("/most-sim", ms.HandleSimNQuery)
 
 	// Similarity comparison endpoints
 	http.HandleFunc("/sim", ms.HandleSimQuery)

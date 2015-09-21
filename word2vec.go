@@ -114,9 +114,8 @@ func (e Expr) Eval(m *Model) (Vector, error) {
 	if len(e) == 0 {
 		return nil, fmt.Errorf("must specify at least one word to evaluate")
 	}
-	return m.Evaluate(e)
+	return m.Eval(e)
 }
-
 
 // Size returns the number of words in the model.
 func (m *Model) Size() int {
@@ -157,9 +156,9 @@ func (m *Model) Sim(u, v Vector) float32 {
 	return u.Dot(v)
 }
 
-// Evaluate constructs a vector by evaluating the mapping word -> coeff to a single
+// Eval constructs a vector by evaluating the expression
 // vector.  Returns an error if a word is not in the model.
-func (m *Model) Evaluate(expr Expr) (Vector, error) {
+func (m *Model) Eval(expr Expr) (Vector, error) {
 	v := Vector(make([]float32, m.dim))
 	for w, c := range expr {
 		u, ok := m.words[w]
@@ -171,26 +170,12 @@ func (m *Model) Evaluate(expr Expr) (Vector, error) {
 	return v, nil
 }
 
-// Eval constructs a vector by adding and subtracting the vector values of
-// lists of words.
-func (m *Model) Eval(add []string, sub []string) (Vector, error) {
-	v := Vector(make([]float32, m.dim))
-	for _, w := range add {
-		u, ok := m.words[w]
-		if !ok {
-			return nil, &NotFoundError{w}
-		}
-		v.Add(1, u)
-	}
-	for _, w := range sub {
-		u, ok := m.words[w]
-		if !ok {
-			return nil, &NotFoundError{w}
-		}
-		v.Add(-1, u)
-	}
-	v.Normalise()
-	return v, nil
+// Eval is a convenience method which
+func Evaluate(m *Model, add []string, sub []string) (Vector, error) {
+	e := Expr{}
+	AddAll(e, 1, add)
+	AddAll(e, -1, sub)
+	return e.Eval(m)
 }
 
 // Match is a type which represents a pairing of a word and score indicating
@@ -200,9 +185,9 @@ type Match struct {
 	Score float32 `json:"score"`
 }
 
-// MostSimilar is a method which returns a list of `n` most similar vectors
+// SimN is a method which returns a list of `n` most similar vectors
 // to `v` in the model.
-func (m *Model) MostSimilar(v Vector, n int) []Match {
+func (m *Model) SimN(v Vector, n int) []Match {
 	r := make([]Match, n)
 	for w, u := range m.words {
 		score := v.Dot(u)
@@ -227,15 +212,15 @@ type multiMatches struct {
 	Matches []Match
 }
 
-// MultiMostSimilar takes a map of word -> vector (see Vectors) and computes the
+// MultiSimN takes a map of word -> vector (see Vectors) and computes the
 // n most similar words for each.
-func MultiMostSimilar(m *Model, vecs map[string]Vector, n int) map[string][]Match {
+func MultiSimN(m *Model, vecs map[string]Vector, n int) map[string][]Match {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(vecs))
 	ch := make(chan multiMatches, len(vecs))
 	for k, v := range vecs {
 		go func(k string, v Vector) {
-			ch <- multiMatches{Word: k, Matches: m.MostSimilar(v, n)}
+			ch <- multiMatches{Word: k, Matches: m.SimN(v, n)}
 			wg.Done()
 		}(k, v)
 	}

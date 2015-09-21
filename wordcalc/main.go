@@ -64,26 +64,25 @@ func main() {
 		vecs := m.Vectors(multiWords)
 
 		before := time.Now()
-		res := word2vec.MultiMostSimilar(m, vecs, 10)
+		res := word2vec.MultiSimN(m, vecs, 10)
 		fmt.Println("Total time:", time.Since(before))
 		fmt.Println(res)
 		return
 	}
 
-	var adds, subs []string
+	expr := word2vec.Expr{}
 	if addList != "" {
-		adds = strings.Split(addList, ",")
+		word2vec.AddAll(expr, 1, strings.Split(addList, ","))
 	}
 	if subList != "" {
-		subs = strings.Split(subList, ",")
+		word2vec.AddAll(expr, -1, strings.Split(subList, ","))
 	}
 
 	if verbose {
-		fmt.Printf("Add:        %#v\n", adds)
-		fmt.Printf("Subtract:   %#v\n", subs)
+		fmt.Printf("Expr: %#v\n", expr)
 	}
 
-	v, err := m.Eval(adds, subs)
+	v, err := expr.Eval(m)
 	if err != nil {
 		fmt.Printf("error creating target vector: %v\n", err)
 		os.Exit(1)
@@ -94,7 +93,7 @@ func main() {
 	}
 
 	before := time.Now()
-	pairs := m.MostSimilar(v, n)
+	pairs := m.SimN(v, n)
 	if err != nil {
 		fmt.Printf("error finding most similar: %v\n", err)
 		os.Exit(1)

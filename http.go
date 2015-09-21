@@ -55,22 +55,22 @@ func (qs MultiSimQuery) Eval(m *Model) (*MultiSimResponse, error) {
 	}, nil
 }
 
-type MostSimQuery struct {
+type SimNQuery struct {
 	Expr Expr `json:"expr"`
 	N    int  `json:"n"`
 }
 
-type MostSimResponse struct {
+type SimNResponse struct {
 	Matches []Match `json:"matches"`
 }
 
-func (q MostSimQuery) Eval(m *Model) (*MostSimResponse, error) {
+func (q SimNQuery) Eval(m *Model) (*SimNResponse, error) {
 	v, err := q.Expr.Eval(m)
 	if err != nil {
 		return nil, err
 	}
-	return &MostSimResponse{
-		Matches: m.MostSimilar(v, q.N),
+	return &SimNResponse{
+		Matches: m.SimN(v, q.N),
 	}, nil
 }
 
@@ -149,11 +149,11 @@ func (m *ModelServer) HandleMultiSimQuery(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (m *ModelServer) HandleMostSimQuery(w http.ResponseWriter, r *http.Request) {
+func (m *ModelServer) HandleSimNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q MostSimQuery
+	var q SimNQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
