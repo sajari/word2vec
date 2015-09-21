@@ -29,15 +29,15 @@ func (q CosineQuery) Eval(m *Model) (*CosineResponse, error) {
 	}, nil
 }
 
-type MultiCosineQuery struct {
+type CosinesQuery struct {
 	Queries []CosineQuery `json:"queries"`
 }
 
-type MultiCosineResponse struct {
+type CosinesResponse struct {
 	Values []CosineResponse `json:"values"`
 }
 
-func (qs MultiCosineQuery) Eval(m *Model) (*MultiCosineResponse, error) {
+func (qs CosinesQuery) Eval(m *Model) (*CosinesResponse, error) {
 	values := make([]CosineResponse, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
@@ -46,7 +46,7 @@ func (qs MultiCosineQuery) Eval(m *Model) (*MultiCosineResponse, error) {
 		}
 		values[i] = *r
 	}
-	return &MultiCosineResponse{
+	return &CosinesResponse{
 		Values: values,
 	}, nil
 }
@@ -84,7 +84,7 @@ func NewServer(m *Model) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/cosine-n", ms.handleCosineNQuery)
 	mux.HandleFunc("/cosine", ms.handleCosineQuery)
-	mux.HandleFunc("/cosine-multi", ms.handleMultiCosineQuery)
+	mux.HandleFunc("/cosines", ms.handleCosinesQuery)
 
 	ms.ServeMux = mux
 	return ms
@@ -129,11 +129,11 @@ func (m *Server) handleCosineQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) handleMultiCosineQuery(w http.ResponseWriter, r *http.Request) {
+func (m *Server) handleCosinesQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q MultiCosineQuery
+	var q CosinesQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -234,8 +234,8 @@ func (c Client) Cosine(x, y Expr) (float32, error) {
 	return data.Value, nil
 }
 
-func (c Client) MultiCosine(pairs [][2]Expr) ([]float32, error) {
-	req := MultiCosineQuery{
+func (c Client) Cosines(pairs [][2]Expr) ([]float32, error) {
+	req := CosinesQuery{
 		Queries: make([]CosineQuery, len(pairs)),
 	}
 	for _, pair := range pairs {
@@ -250,7 +250,7 @@ func (c Client) MultiCosine(pairs [][2]Expr) ([]float32, error) {
 		return nil, err
 	}
 
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cosine-multi", bytes.NewReader(b))
+	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cosines", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (c Client) MultiCosine(pairs [][2]Expr) ([]float32, error) {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
-	var data MultiCosineResponse
+	var data CosinesResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
