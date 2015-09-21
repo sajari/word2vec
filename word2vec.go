@@ -127,15 +127,22 @@ func (m *Model) Dim() int {
 	return m.dim
 }
 
-// Similarity returns the similarity between the two words.
-func (m *Model) Similarity(x, y string) (float32, error) {
-	u, ok := m.words[x]
-	if !ok {
-		return 0.0, &NotFoundError{x}
+// Sim returns the similarity between the two words.
+func Sim(m *Model, x, y string) (float32, error) {
+	a := Expr{}
+	a.Add(1, x)
+
+	b := Expr{}
+	b.Add(1, y)
+
+	u, err := m.Eval(a)
+	if err != nil {
+		return 0.0, err
 	}
-	v, ok := m.words[y]
-	if !ok {
-		return 0.0, &NotFoundError{y}
+
+	v, err := m.Eval(b)
+	if err != nil {
+		return 0.0, err
 	}
 	return u.Dot(v), nil
 }
