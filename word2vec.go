@@ -117,8 +117,9 @@ func (e Expr) Eval(m *Model) (Vector, error) {
 	return m.Eval(e)
 }
 
-// Evaluator is an interface which defines methods which can evaluate Expr.
-type Evaluator interface {
+// Cosiner is an interface which defines methods which can evaluate Cosine similarity
+// on Expr.
+type Cosiner interface {
 	// Cosine computes the cosine similarity of the expressions.
 	Cosine(e, f Expr) (float32, error)
 
