@@ -216,13 +216,17 @@ func (c Client) Cosine(x, y Expr) (float32, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return 0.0, fmt.Errorf("non-%v status code: %v", http.StatusOK, resp.Status)
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return 0.0, fmt.Errorf("error reading response: %v", err)
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		return 0.0, fmt.Errorf("error: %v", string(b))
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return 0.0, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(b))
 	}
 
 	var data CosineResponse
@@ -302,13 +306,17 @@ func (c Client) CosineN(e Expr, n int) ([]Match, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-%v status code: %v", http.StatusOK, resp.Status)
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		return nil, fmt.Errorf("error: %v", string(body))
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(body))
 	}
 
 	var data CosineNResponse
