@@ -16,6 +16,8 @@ import (
 var addr string
 var addListA, subListA string
 var addListB, subListB string
+var sim bool
+var n int
 
 func init() {
 	flag.StringVar(&addr, "addr", "localhost:1234", "server address")
@@ -23,6 +25,8 @@ func init() {
 	flag.StringVar(&subListA, "subA", "", "comma separated list of model words to subtract from the target vector A")
 	flag.StringVar(&addListB, "addB", "", "comma separated list of model words to add to the target vector B")
 	flag.StringVar(&subListB, "subB", "", "comma separated list of model words to subtract from the target vector B")
+	flag.BoolVar(&sim, "sim", false, "similarity query")
+	flag.IntVar(&n, "n", 10, "return `N` similar items in similarity query")
 }
 
 func makeExpr(addList, subList string) (word2vec.Expr, error) {
@@ -56,6 +60,19 @@ func main() {
 	if err != nil {
 		fmt.Printf("error creating target vector for 'A': %v\n", err)
 		os.Exit(1)
+	}
+
+	if sim {
+		c := word2vec.Client{Addr: addr}
+		r, err := c.CosineN(exprA, n)
+		if err != nil {
+			fmt.Printf("error looking up similar items: %v\n", err)
+			os.Exit(1)
+		}
+		for _, x := range r {
+			fmt.Printf("%9f %#v\n", x.Score, x.Word)
+		}
+		return
 	}
 
 	exprB, err := makeExpr(addListB, subListB)
