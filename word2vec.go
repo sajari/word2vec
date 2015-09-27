@@ -132,9 +132,9 @@ func AddWeight(e Expr, weights []float32, words []string) {
 	}
 }
 
-// Cosr is an interface which defines methods which can evaluate Cos similarity
+// Coser is an interface which defines methods which can evaluate Cos similarity
 // on Expr.
-type Cosr interface {
+type Coser interface {
 	// Cos computes the cosine similarity of the expressions.
 	Cos(e, f Expr) (float32, error)
 
