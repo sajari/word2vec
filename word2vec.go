@@ -132,17 +132,17 @@ func AddWeight(e Expr, weights []float32, words []string) {
 	}
 }
 
-// Cosiner is an interface which defines methods which can evaluate Cosine similarity
+// Cosr is an interface which defines methods which can evaluate Cos similarity
 // on Expr.
-type Cosiner interface {
-	// Cosine computes the cosine similarity of the expressions.
-	Cosine(e, f Expr) (float32, error)
+type Cosr interface {
+	// Cos computes the cosine similarity of the expressions.
+	Cos(e, f Expr) (float32, error)
 
-	// Cosines computes the cosine similarity of all pairs of expressions.
-	Cosines(pairs [][2]Expr) ([]float32, error)
+	// Coses computes the cosine similarity of all pairs of expressions.
+	Coses(pairs [][2]Expr) ([]float32, error)
 
-	// CosineN computes the N most similar words to the expression.
-	CosineN(e Expr, n int) ([]Match, error)
+	// CosN computes the N most similar words to the expression.
+	CosN(e Expr, n int) ([]Match, error)
 }
 
 // Size returns the number of words in the model.
@@ -167,8 +167,8 @@ func (m *Model) Vectors(words []string) map[string]Vector {
 	return result
 }
 
-// Cosine returns the cosine similarity of the given expressions.
-func (m *Model) Cosine(a, b Expr) (float32, error) {
+// Cos returns the cosine similarity of the given expressions.
+func (m *Model) Cos(a, b Expr) (float32, error) {
 	u, err := a.Eval(m)
 	if err != nil {
 		return 0, err
@@ -203,9 +203,9 @@ type Match struct {
 	Score float32 `json:"score"`
 }
 
-// CosineN computes the n most similar words to the expression.  Returns an error if the
+// CosN computes the n most similar words to the expression.  Returns an error if the
 // expression could not be evaluated.
-func (m *Model) CosineN(e Expr, n int) ([]Match, error) {
+func (m *Model) CosN(e Expr, n int) ([]Match, error) {
 	v, err := e.Eval(m)
 	if err != nil {
 		return nil, err
@@ -241,9 +241,9 @@ type multiMatches struct {
 	Matches []Match
 }
 
-// MultiCosineN takes a list of expressions and computes the
+// MultiCosN takes a list of expressions and computes the
 // n most similar words for each.
-func MultiCosineN(m *Model, exprs []Expr, n int) ([][]Match, error) {
+func MultiCosN(m *Model, exprs []Expr, n int) ([][]Match, error) {
 	vecs := make([]Vector, len(exprs))
 	for i, e := range exprs {
 		v, err := e.Eval(m)

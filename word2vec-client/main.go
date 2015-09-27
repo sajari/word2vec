@@ -64,7 +64,7 @@ func main() {
 
 	if sim {
 		c := word2vec.Client{Addr: addr}
-		r, err := c.CosineN(exprA, n)
+		r, err := c.CosN(exprA, n)
 		if err != nil {
 			fmt.Printf("error looking up similar items: %v\n", err)
 			os.Exit(1)
@@ -84,7 +84,7 @@ func main() {
 	c := word2vec.Client{Addr: addr}
 
 	start := time.Now()
-	v, err := c.Cosine(exprA, exprB)
+	v, err := c.Cos(exprA, exprB)
 	totalTime := time.Since(start)
 	if err != nil {
 		fmt.Printf("error looking up similarity: %v\n", err)
