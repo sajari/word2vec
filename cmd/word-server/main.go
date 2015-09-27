@@ -1,3 +1,6 @@
+/*
+word-server creates an HTTP server which exports endpoints for querying a word2vec model.
+*/
 package main
 
 import (
@@ -10,24 +13,23 @@ import (
 	"github.com/sajari/word2vec"
 )
 
-var listen string
-var path string
+var listen, modelPath string
 
 func init() {
 	flag.StringVar(&listen, "listen", "localhost:1234", "bind `address` for HTTP server")
-	flag.StringVar(&path, "p", "", "path to binary model data")
+	flag.StringVar(&modelPath, "model", "", "path to binary model data")
 }
 
 func main() {
 	flag.Parse()
 
-	if path == "" {
+	if modelPath == "" {
 		fmt.Println("must specify -p; see -h for more details")
 		os.Exit(1)
 	}
 
 	log.Println("Loading model...")
-	f, err := os.Open(path)
+	f, err := os.Open(modelPath)
 	if err != nil {
 		fmt.Printf("error opening binary model data file: %v\n", err)
 		os.Exit(1)
