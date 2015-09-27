@@ -193,10 +193,13 @@ func (m *Server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Client is type which implements Coser and evaluates Expr similarity queries
+// using a word2vec Server (see above).
 type Client struct {
 	Addr string
 }
 
+// Cos implements Coser.
 func (c Client) Cos(x, y Expr) (float32, error) {
 	req := CosQuery{A: x, B: y}
 
@@ -238,6 +241,7 @@ func (c Client) Cos(x, y Expr) (float32, error) {
 	return data.Value, nil
 }
 
+// Coses implements Coser.
 func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 	req := CosesQuery{
 		Queries: make([]CosQuery, len(pairs)),
@@ -287,6 +291,7 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 	return result, nil
 }
 
+// CosN implements Coser.
 func (c Client) CosN(e Expr, n int) ([]Match, error) {
 	req := CosNQuery{Expr: e, N: n}
 
