@@ -71,6 +71,11 @@ func (v Vector) Normalise() {
 	blas.Sscal(len(v), 1/w, v, 1)
 }
 
+// Norm computes the Euclidean norm of the vector.
+func (v Vector) Norm() float32 {
+	return blas.Snrm2(len(v), v, 1)
+}
+
 // Add performs v += a * u (in-place).
 func (v Vector) Add(a float32, u Vector) {
 	blas.Saxpy(len(v), a, u, 1, v, 1)
