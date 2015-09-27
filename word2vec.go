@@ -106,20 +106,30 @@ func (e Expr) Add(f float32, w string) {
 	e[w] += f
 }
 
-// AddAll is a convenience method which adds all the words in the slice to the Expr, using the given
-// coefficient.
-func AddAll(e Expr, f float32, ws []string) {
-	for _, w := range ws {
-		e.Add(f, w)
-	}
-}
-
 // Eval evaluates the Expr to a Vector using a Model.
 func (e Expr) Eval(m *Model) (Vector, error) {
 	if len(e) == 0 {
 		return nil, fmt.Errorf("must specify at least one word to evaluate")
 	}
 	return m.Eval(e)
+}
+
+// Add is a convenience method for adding a list of words to an Expr.
+func Add(e Expr, weight float32, words []string) {
+	for _, w := range words {
+		e.Add(weight, w)
+	}
+}
+
+// AddWeight is a convenience method for adding weighted words to an Expr.
+func AddWeight(e Expr, weights []float32, words []string) {
+	if len(weights) != len(words) {
+		panic("weight and words must be the same length")
+	}
+
+	for i, w := range weights {
+		e.Add(w, words[i])
+	}
 }
 
 // Cosiner is an interface which defines methods which can evaluate Cosine similarity

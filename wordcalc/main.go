@@ -83,10 +83,10 @@ func main() {
 
 	expr := word2vec.Expr{}
 	if addList != "" {
-		word2vec.AddAll(expr, 1, strings.Split(addList, ","))
+		word2vec.Add(expr, 1, strings.Split(addList, ","))
 	}
 	if subList != "" {
-		word2vec.AddAll(expr, -1, strings.Split(subList, ","))
+		word2vec.Add(expr, -1, strings.Split(subList, ","))
 	}
 
 	if verbose {
