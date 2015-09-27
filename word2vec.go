@@ -1,5 +1,5 @@
 // Package word2vec provides functionality for reading binary word2vec models
-// and basic usage (see https://code.google.com/p/word2vec/).
+// and performing cosine similarity queries (see https://code.google.com/p/word2vec/).
 package word2vec
 
 import (
