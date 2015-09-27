@@ -1,5 +1,6 @@
 /*
-word2vec-client is a tool which uses word2vec.Client to look up similarities (using an external server).
+word2vec-client is a tool which queries a `word-server` HTTP server to do computations with a word2vec
+model.
 */
 package main
 
@@ -20,11 +21,11 @@ var sim bool
 var n int
 
 func init() {
-	flag.StringVar(&addr, "addr", "localhost:1234", "server address")
-	flag.StringVar(&addListA, "addA", "", "comma separated list of model words to add to the target vector A")
-	flag.StringVar(&subListA, "subA", "", "comma separated list of model words to subtract from the target vector A")
-	flag.StringVar(&addListB, "addB", "", "comma separated list of model words to add to the target vector B")
-	flag.StringVar(&subListB, "subB", "", "comma separated list of model words to subtract from the target vector B")
+	flag.StringVar(&addr, "addr", "localhost:1234", "server `address`")
+	flag.StringVar(&addListA, "addA", "", "comma separated list of model `words` to add to the target vector A")
+	flag.StringVar(&subListA, "subA", "", "comma separated list of model `words` to subtract from the target vector A")
+	flag.StringVar(&addListB, "addB", "", "comma separated list of model `words` to add to the target vector B")
+	flag.StringVar(&subListB, "subB", "", "comma separated list of model `words` to subtract from the target vector B")
 	flag.BoolVar(&sim, "sim", false, "similarity query")
 	flag.IntVar(&n, "n", 10, "return `N` similar items in similarity query")
 }
