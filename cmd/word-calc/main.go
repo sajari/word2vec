@@ -24,10 +24,10 @@ var verbose bool
 var n int
 
 func init() {
-	flag.StringVar(&path, "p", "", "path to binary model data")
-	flag.StringVar(&multiQuery, "m", "", "comma separated list of model words to query at the same time")
-	flag.StringVar(&addList, "a", "", "comma separated list of model words to add to the target vector")
-	flag.StringVar(&subList, "s", "", "comma separated list of model words to subtract from the target vector")
+	flag.StringVar(&path, "model", "", "path to binary model data")
+	flag.StringVar(&multiQuery, "words", "", "comma separated list of model words to query at the same time")
+	flag.StringVar(&addList, "add", "", "comma separated list of model words to add to the target vector")
+	flag.StringVar(&subList, "sub", "", "comma separated list of model words to subtract from the target vector")
 	flag.BoolVar(&verbose, "v", false, "show verbose output")
 	flag.IntVar(&n, "n", 10, "number of most similar matches to show")
 }
@@ -36,12 +36,12 @@ func main() {
 	flag.Parse()
 
 	if path == "" {
-		fmt.Println("must specify -p; see -h for more details")
+		fmt.Println("must specify -model; see -h for more details")
 		os.Exit(1)
 	}
 
 	if addList == "" && subList == "" && multiQuery == "" {
-		fmt.Println("must specify -a, -s, or -m; see -h for more details")
+		fmt.Println("must specify -add, -sub, or -words; see -h for more details")
 		os.Exit(1)
 	}
 
@@ -73,7 +73,7 @@ func main() {
 		before := time.Now()
 		res, err := word2vec.MultiCosN(m, exprs, 10)
 		if err != nil {
-			fmt.Println("error retrieving multi sim: %v", err)
+			fmt.Println("error retrieving multi cos: %v", err)
 			os.Exit(1)
 		}
 		fmt.Println("Total time:", time.Since(before))
