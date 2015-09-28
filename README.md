@@ -28,4 +28,28 @@ matches, err := m.CosN(expr, 1)
 if err != nil {
 	log.Fatalf("error evaluating cosine similarity: %v", err)
 }
-````
+```
+
+##  word2vec server
+
+The `word-server` tool (see `cmd/word-server`) creates an HTTP server which wraps a word2vec model which can be queried from Go using a [Client](http://godoc.org/github.com/sajari/word2vec#Client), or using the `word-client` tool (see `cmd/word-client`).
+
+    $ word-server -model /path/to/model.bin -listen localhost:1234
+
+A simple code example using `Client`:
+
+```go
+c := word2vec.Client{Addr: "localhost:1234"}
+
+// Create an expression.
+expr := word2vec.Expr{}
+expr.Add(1, "king")
+expr.Add(-1, "man")
+expr.Add(1, "woman")
+
+// Find the most similar result by cosine similarity.
+matches, err := c.CosN(expr, 1)
+if err != nil {
+	log.Fatalf("error evaluating cosine similarity: %v", err)
+}
+```
