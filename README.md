@@ -1,4 +1,5 @@
 # word2vec
+[![Build Status](https://travis-ci.org/sajari/word2vec.svg?branch=master)](https://travis-ci.org/sajari/word2vec)
 
 word2vec provides functionality for loading binary [word2vec](https://code.google.com/p/word2vec) models and performing cosine similarity of combinations of words.
 
