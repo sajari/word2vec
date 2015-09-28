@@ -71,11 +71,15 @@ func (q CosNQuery) Eval(m *Model) (*CosNResponse, error) {
 	}, nil
 }
 
+// Server is a type which implements http.Handler and exports endpoints
+// for performing similarity queries on a word2vec model.
 type Server struct {
 	*Model
 	*http.ServeMux
 }
 
+// NewServer creates a new word2vec Server which exports endpoints for performing
+// similarity queries on a word2vec Model.
 func NewServer(m *Model) http.Handler {
 	ms := &Server{
 		Model: m,
