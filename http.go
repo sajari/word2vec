@@ -9,36 +9,36 @@ import (
 	"net/http"
 )
 
-type CosQuery struct {
+type cosQuery struct {
 	A Expr `json:"a,omitempty"`
 	B Expr `json:"b,omitempty"`
 }
 
-type CosResponse struct {
+type cosResponse struct {
 	Value float32 `json:"value"`
 }
 
-func (q CosQuery) Eval(m *Model) (*CosResponse, error) {
+func (q cosQuery) Eval(m *Model) (*cosResponse, error) {
 	v, err := m.Cos(q.A, q.B)
 	if err != nil {
 		return nil, err
 	}
 
-	return &CosResponse{
+	return &cosResponse{
 		Value: v,
 	}, nil
 }
 
-type CosesQuery struct {
-	Queries []CosQuery `json:"queries"`
+type cosesQuery struct {
+	Queries []cosQuery `json:"queries"`
 }
 
-type CosesResponse struct {
-	Values []CosResponse `json:"values"`
+type cosesResponse struct {
+	Values []cosResponse `json:"values"`
 }
 
-func (qs CosesQuery) Eval(m *Model) (*CosesResponse, error) {
-	values := make([]CosResponse, len(qs.Queries))
+func (qs cosesQuery) Eval(m *Model) (*cosesResponse, error) {
+	values := make([]cosResponse, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
 		if err != nil {
@@ -46,27 +46,27 @@ func (qs CosesQuery) Eval(m *Model) (*CosesResponse, error) {
 		}
 		values[i] = *r
 	}
-	return &CosesResponse{
+	return &cosesResponse{
 		Values: values,
 	}, nil
 }
 
-type CosNQuery struct {
+type cosNQuery struct {
 	Expr Expr `json:"expr"`
 	N    int  `json:"n"`
 }
 
-type CosNResponse struct {
+type cosNResponse struct {
 	Matches []Match `json:"matches"`
 }
 
-func (q CosNQuery) Eval(m *Model) (*CosNResponse, error) {
+func (q cosNQuery) Eval(m *Model) (*cosNResponse, error) {
 	r, err := m.CosN(q.Expr, q.N)
 	if err != nil {
 		return nil, err
 	}
 
-	return &CosNResponse{
+	return &cosNResponse{
 		Matches: r,
 	}, nil
 }
@@ -105,7 +105,7 @@ func (m *Server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q CosQuery
+	var q cosQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -137,7 +137,7 @@ func (m *Server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q CosesQuery
+	var q cosesQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -169,7 +169,7 @@ func (m *Server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
-	var q CosNQuery
+	var q cosNQuery
 	err := dec.Decode(&q)
 	if err != nil {
 		msg := fmt.Sprintf("error decoding query: %v", err)
@@ -205,7 +205,7 @@ type Client struct {
 
 // Cos implements Coser.
 func (c Client) Cos(x, y Expr) (float32, error) {
-	req := CosQuery{A: x, B: y}
+	req := cosQuery{A: x, B: y}
 
 	b, err := json.Marshal(req)
 	if err != nil {
@@ -236,7 +236,7 @@ func (c Client) Cos(x, y Expr) (float32, error) {
 		return 0.0, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(b))
 	}
 
-	var data CosResponse
+	var data cosResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return 0.0, fmt.Errorf("error unmarshalling result: %v", err)
@@ -247,11 +247,11 @@ func (c Client) Cos(x, y Expr) (float32, error) {
 
 // Coses implements Coser.
 func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
-	req := CosesQuery{
-		Queries: make([]CosQuery, len(pairs)),
+	req := cosesQuery{
+		Queries: make([]cosQuery, len(pairs)),
 	}
 	for _, pair := range pairs {
-		req.Queries = append(req.Queries, CosQuery{
+		req.Queries = append(req.Queries, cosQuery{
 			A: pair[0],
 			B: pair[1],
 		})
@@ -282,7 +282,7 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
-	var data CosesResponse
+	var data cosesResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
@@ -297,7 +297,7 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 
 // CosN implements Coser.
 func (c Client) CosN(e Expr, n int) ([]Match, error) {
-	req := CosNQuery{Expr: e, N: n}
+	req := cosNQuery{Expr: e, N: n}
 
 	b, err := json.Marshal(req)
 	if err != nil {
@@ -328,7 +328,7 @@ func (c Client) CosN(e Expr, n int) ([]Match, error) {
 		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(body))
 	}
 
-	var data CosNResponse
+	var data cosNResponse
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
