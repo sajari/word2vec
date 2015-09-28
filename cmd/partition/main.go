@@ -11,7 +11,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/sajari/word2vec"
+	"github.com/sajari/word2vec/partition"
 )
 
 var path string
@@ -66,7 +66,7 @@ func main() {
 	}
 	defer f.Close()
 
-	p, err := word2vec.NewPartition(f)
+	p, err := partition.NewPartition(f)
 	if err != nil {
 		fmt.Printf("error reading classes data: %v\n", err)
 		os.Exit(1)

@@ -1,4 +1,4 @@
-package word2vec
+package partition
 
 import (
 	"bufio"
@@ -7,6 +7,17 @@ import (
 	"strconv"
 	"strings"
 )
+
+
+// NotFoundError is an error returned from Partition functions when an input
+// word can not be found.
+type NotFoundError struct {
+	Word string
+}
+
+func (e NotFoundError) Error() string {
+	return fmt.Sprintf("word not found: %v", e.Word)
+}
 
 // Partition represents an arrangement of words from a word2vec model into a partition of
 // equivalency classes.
