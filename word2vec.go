@@ -96,14 +96,14 @@ func (e NotFoundError) Error() string {
 	return fmt.Sprintf("word not found: %v", e.Word)
 }
 
-// Expr is a type which represents a linear expresssion which can be evaluated to a vector
-// by a word2vec Model.
+// Expr is a type which represents a linear expresssion of (weight, word) pairs
+// which can be evaluated to a vector by a word2vec Model.
 type Expr map[string]float32
 
-// Add appends the given word with coefficient to the expression.  If the word already exists
-// in the expression, then the coefficients are added.
-func (e Expr) Add(f float32, w string) {
-	e[w] += f
+// Add appends the given word with specified weight to the expression.  If the word already
+// exists in the expression, then the weights are added.
+func (e Expr) Add(weight float32, word string) {
+	e[word] += weight
 }
 
 // Eval evaluates the Expr to a Vector using a Model.
@@ -114,14 +114,14 @@ func (e Expr) Eval(m *Model) (Vector, error) {
 	return m.Eval(e)
 }
 
-// Add is a convenience method for adding a list of words to an Expr.
+// Add is a convenience method for adding multiple words to an Expr.
 func Add(e Expr, weight float32, words []string) {
 	for _, w := range words {
 		e.Add(weight, w)
 	}
 }
 
-// AddWeight is a convenience method for adding weighted words to an Expr.
+// AddWeight is a convenience method for adding multiple weighted words to an Expr.
 func AddWeight(e Expr, weights []float32, words []string) {
 	if len(weights) != len(words) {
 		panic("weight and words must be the same length")
