@@ -71,17 +71,17 @@ func (q cosNQuery) Eval(m *Model) (*cosNResponse, error) {
 	}, nil
 }
 
-// Server is a type which implements http.Handler and exports endpoints
+// server is a type which implements http.Handler and exports endpoints
 // for performing similarity queries on a word2vec model.
-type Server struct {
+type server struct {
 	*Model
 	*http.ServeMux
 }
 
-// NewServer creates a new word2vec Server which exports endpoints for performing
+// NewServer creates a new word2vec server which exports endpoints for performing
 // similarity queries on a word2vec Model.
 func NewServer(m *Model) http.Handler {
-	ms := &Server{
+	ms := &server{
 		Model: m,
 	}
 
@@ -101,7 +101,7 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 	return
 }
 
-func (m *Server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
+func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -133,7 +133,7 @@ func (m *Server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
+func (m *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -165,7 +165,7 @@ func (m *Server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
+func (m *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
