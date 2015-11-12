@@ -73,7 +73,7 @@ func main() {
 		before := time.Now()
 		res, err := word2vec.MultiCosN(m, exprs, 10)
 		if err != nil {
-			fmt.Println("error retrieving multi cos: %v", err)
+			fmt.Printf("error retrieving multi cos: %v", err)
 			os.Exit(1)
 		}
 		fmt.Println("Total time:", time.Since(before))
