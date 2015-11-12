@@ -181,6 +181,20 @@ func (m *Model) Cos(a, b Expr) (float32, error) {
 	return u.Dot(v), nil
 }
 
+// Coses returns the cosine similarity of each pair of expressions in the list.  Returns
+// immediately if an error occurs.
+func (m *Model) Coses(pairs [][2]Expr) ([]float32, error) {
+	out := make([]float32, len(pairs))
+	for i, p := range pairs {
+		c, err := m.Cos(p[0], p[1])
+		if err != nil {
+			return nil, err
+		}
+		out[i] = c
+	}
+	return out, nil
+}
+
 // Eval constructs a vector by evaluating the expression
 // vector.  Returns an error if a word is not in the model.
 func (m *Model) Eval(expr Expr) (Vector, error) {
