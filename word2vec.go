@@ -12,7 +12,7 @@ import (
 	"github.com/ziutek/blas"
 )
 
-// Model is a type which represents a word2vec Model.
+// Model is a type which represents a word2vec Model and implements the Coser interface.
 type Model struct {
 	dim   int
 	words map[string]Vector
@@ -133,7 +133,7 @@ func AddWeight(e Expr, weights []float32, words []string) {
 }
 
 // Coser is an interface which defines methods which can evaluate cosine similarity
-// on Expr.
+// between Exprs.
 type Coser interface {
 	// Cos computes the cosine similarity of the expressions.
 	Cos(e, f Expr) (float32, error)
