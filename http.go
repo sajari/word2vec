@@ -18,8 +18,8 @@ type cosResponse struct {
 	Value float32 `json:"value"`
 }
 
-func (q cosQuery) Eval(m *Model) (interface{}, error) {
-	v, err := m.Cos(q.A, q.B)
+func (q cosQuery) Eval(c Coser) (interface{}, error) {
+	v, err := c.Cos(q.A, q.B)
 	if err != nil {
 		return nil, err
 	}
@@ -37,10 +37,10 @@ type cosesResponse struct {
 	Values []cosResponse `json:"values"`
 }
 
-func (qs cosesQuery) Eval(m *Model) (interface{}, error) {
+func (qs cosesQuery) Eval(c Coser) (interface{}, error) {
 	values := make([]interface{}, len(qs.Queries))
 	for i, q := range qs.Queries {
-		r, err := q.Eval(m)
+		r, err := q.Eval(c)
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +62,8 @@ type cosNResponse struct {
 	Matches []Match `json:"matches"`
 }
 
-func (q cosNQuery) Eval(m *Model) (interface{}, error) {
-	r, err := m.CosN(q.Expr, q.N)
+func (q cosNQuery) Eval(c Coser) (interface{}, error) {
+	r, err := c.CosN(q.Expr, q.N)
 	if err != nil {
 		return nil, err
 	}
@@ -76,15 +76,15 @@ func (q cosNQuery) Eval(m *Model) (interface{}, error) {
 // server is a type which implements http.Handler and exports endpoints
 // for performing similarity queries on a word2vec model.
 type server struct {
-	*Model
+	Coser
 	*http.ServeMux
 }
 
 // NewServer creates a new word2vec server which exports endpoints for performing
 // similarity queries on a word2vec Model.
-func NewServer(m *Model) http.Handler {
+func NewServer(c Coser) http.Handler {
 	ms := &server{
-		Model: m,
+		Coser: c,
 	}
 
 	mux := http.NewServeMux()
@@ -104,11 +104,11 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 }
 
 type evaler interface {
-	Eval(*Model) (interface{}, error)
+	Eval(Coser) (interface{}, error)
 }
 
-func (m *server) handleEval(e evaler, w http.ResponseWriter, r *http.Request) {
-	resp, err := e.Eval(m.Model)
+func (s *server) handleEval(e evaler, w http.ResponseWriter, r *http.Request) {
+	resp, err := e.Eval(s.Coser)
 	if err != nil {
 		msg := fmt.Sprintf("error evaluating query: %v", err)
 		handleError(w, r, http.StatusBadRequest, msg)
@@ -128,7 +128,7 @@ func (m *server) handleEval(e evaler, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -139,10 +139,10 @@ func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, msg)
 		return
 	}
-	m.handleEval(q, w, r)
+	s.handleEval(q, w, r)
 }
 
-func (m *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -153,10 +153,10 @@ func (m *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, msg)
 		return
 	}
-	m.handleEval(q, w, r)
+	s.handleEval(q, w, r)
 }
 
-func (m *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -167,7 +167,7 @@ func (m *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, msg)
 		return
 	}
-	m.handleEval(q, w, r)
+	s.handleEval(q, w, r)
 }
 
 // Client is type which implements Coser and evaluates Expr similarity queries
