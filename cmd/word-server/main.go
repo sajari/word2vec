@@ -17,7 +17,7 @@ var listen, modelPath string
 
 func init() {
 	flag.StringVar(&listen, "listen", "localhost:1234", "bind `address` for HTTP server")
-	flag.StringVar(&modelPath, "model", "", "path to binary model data")
+	flag.StringVar(&modelPath, "model", "", "`path` to binary model data")
 }
 
 func main() {

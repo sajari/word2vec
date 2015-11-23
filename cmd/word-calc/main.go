@@ -24,12 +24,12 @@ var verbose bool
 var n int
 
 func init() {
-	flag.StringVar(&path, "model", "", "path to binary model data")
-	flag.StringVar(&multiQuery, "words", "", "comma separated list of model words to query at the same time")
-	flag.StringVar(&addList, "add", "", "comma separated list of model words to add to the target vector")
-	flag.StringVar(&subList, "sub", "", "comma separated list of model words to subtract from the target vector")
+	flag.StringVar(&path, "model", "", "`path` to binary model data")
+	flag.StringVar(&multiQuery, "words", "", "comma separated list of model `words` to query at the same time")
+	flag.StringVar(&addList, "add", "", "comma separated list of model `words` to add to the target vector")
+	flag.StringVar(&subList, "sub", "", "comma separated list of model `words` to subtract from the target vector")
 	flag.BoolVar(&verbose, "v", false, "show verbose output")
-	flag.IntVar(&n, "n", 10, "number of most similar matches to show")
+	flag.IntVar(&n, "n", 10, "show `N` similar matches")
 }
 
 func main() {

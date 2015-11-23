@@ -21,9 +21,9 @@ var dist bool
 var info bool
 
 func init() {
-	flag.StringVar(&path, "p", "", "path to classes text data")
-	flag.StringVar(&query, "q", "", "word to fetch class")
-	flag.IntVar(&class, "c", 0, "class to fetch")
+	flag.StringVar(&path, "p", "", "`path` to classes text data")
+	flag.StringVar(&query, "q", "", "fetch the class for `word`")
+	flag.IntVar(&class, "c", 0, "`class` to fetch")
 	flag.BoolVar(&dist, "d", false, "show distribution of classes")
 	flag.BoolVar(&info, "i", false, "only show info about the word class and partition")
 }
