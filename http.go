@@ -31,26 +31,27 @@ func (q cosQuery) Eval(c Coser) (interface{}, error) {
 }
 
 type cosesQuery struct {
-	Queries []cosQuery `json:"queries"`
+	A []Expr `json:"a"`
+	B []Expr `json:"b"`
 }
 
 type cosesResponse struct {
-	Values []cosResponse `json:"values"`
+	Values []float32 `json:"values"`
 }
 
 func (qs cosesQuery) Eval(c Coser) (interface{}, error) {
-	values := make([]interface{}, len(qs.Queries))
-	for i, q := range qs.Queries {
-		r, err := q.Eval(c)
-		if err != nil {
-			return nil, err
-		}
-		values[i] = r
+	query := make([][2]Expr, len(qs.A))
+	for i := range qs.A {
+		query[i] = [2]Expr{qs.A[i], qs.B[i]}
+	}
+	result, err := c.Coses(query)
+	if err != nil {
+		return nil, err
 	}
 	return struct {
-		Values interface{}
+		Values []float32
 	}{
-		Values: values,
+		Values: result,
 	}, nil
 }
 
@@ -230,13 +231,12 @@ func (c Client) Cos(x, y Expr) (float32, error) {
 // Coses implements Coser.
 func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 	req := cosesQuery{
-		Queries: make([]cosQuery, len(pairs)),
+		A: make([]Expr, len(pairs)),
+		B: make([]Expr, len(pairs)),
 	}
-	for _, pair := range pairs {
-		req.Queries = append(req.Queries, cosQuery{
-			A: pair[0],
-			B: pair[1],
-		})
+	for i, pair := range pairs {
+		req.A[i] = pair[0]
+		req.B[i] = pair[1]
 	}
 
 	body, err := c.fetch(req, "coses")
@@ -249,12 +249,7 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
 	}
-
-	result := make([]float32, len(data.Values))
-	for i, v := range data.Values {
-		result[i] = v.Value
-	}
-	return result, nil
+	return data.Values, nil
 }
 
 // CosN implements Coser.
