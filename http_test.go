@@ -175,6 +175,12 @@ func TestEndToEndCosN(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			x:   Expr{"hello": 1.0},
+			n:   10,
+			m:   nil,
+			err: fmt.Errorf("suffix error"),
+		},
 	}
 
 	for _, tt := range cosNTests {
