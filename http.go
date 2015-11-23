@@ -3,6 +3,7 @@ package word2vec
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -193,18 +194,19 @@ func (c Client) fetch(x interface{}, suffix string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusBadRequest {
-		return nil, fmt.Errorf("error: %v", string(b))
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(b))
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %v", err)
 	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		return nil, errors.New(string(body))
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(body))
+	}
+
 	return body, nil
 }
 
