@@ -18,7 +18,7 @@ type cosResponse struct {
 	Value float32 `json:"value"`
 }
 
-func (q cosQuery) Eval(m *Model) (*cosResponse, error) {
+func (q cosQuery) Eval(m *Model) (interface{}, error) {
 	v, err := m.Cos(q.A, q.B)
 	if err != nil {
 		return nil, err
@@ -37,16 +37,18 @@ type cosesResponse struct {
 	Values []cosResponse `json:"values"`
 }
 
-func (qs cosesQuery) Eval(m *Model) (*cosesResponse, error) {
-	values := make([]cosResponse, len(qs.Queries))
+func (qs cosesQuery) Eval(m *Model) (interface{}, error) {
+	values := make([]interface{}, len(qs.Queries))
 	for i, q := range qs.Queries {
 		r, err := q.Eval(m)
 		if err != nil {
 			return nil, err
 		}
-		values[i] = *r
+		values[i] = r
 	}
-	return &cosesResponse{
+	return struct {
+		Values interface{}
+	}{
 		Values: values,
 	}, nil
 }
@@ -60,7 +62,7 @@ type cosNResponse struct {
 	Matches []Match `json:"matches"`
 }
 
-func (q cosNQuery) Eval(m *Model) (*cosNResponse, error) {
+func (q cosNQuery) Eval(m *Model) (interface{}, error) {
 	r, err := m.CosN(q.Expr, q.N)
 	if err != nil {
 		return nil, err
@@ -101,19 +103,12 @@ func handleError(w http.ResponseWriter, r *http.Request, status int, msg string)
 	return
 }
 
-func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
-	dec := json.NewDecoder(r.Body)
-	defer r.Body.Close()
+type evaler interface {
+	Eval(*Model) (interface{}, error)
+}
 
-	var q cosQuery
-	err := dec.Decode(&q)
-	if err != nil {
-		msg := fmt.Sprintf("error decoding query: %v", err)
-		handleError(w, r, http.StatusInternalServerError, msg)
-		return
-	}
-
-	resp, err := q.Eval(m.Model)
+func (m *server) handleEval(e evaler, w http.ResponseWriter, r *http.Request) {
+	resp, err := e.Eval(m.Model)
 	if err != nil {
 		msg := fmt.Sprintf("error evaluating query: %v", err)
 		handleError(w, r, http.StatusBadRequest, msg)
@@ -131,6 +126,20 @@ func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("error writing response: %v", err)
 	}
+}
+
+func (m *server) handleCosQuery(w http.ResponseWriter, r *http.Request) {
+	dec := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	var q cosQuery
+	err := dec.Decode(&q)
+	if err != nil {
+		msg := fmt.Sprintf("error decoding query: %v", err)
+		handleError(w, r, http.StatusInternalServerError, msg)
+		return
+	}
+	m.handleEval(q, w, r)
 }
 
 func (m *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
@@ -144,25 +153,7 @@ func (m *server) handleCosesQuery(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, msg)
 		return
 	}
-
-	resp, err := q.Eval(m.Model)
-	if err != nil {
-		msg := fmt.Sprintf("error evaluating query: %v", err)
-		handleError(w, r, http.StatusBadRequest, msg)
-		return
-	}
-
-	b, err := json.Marshal(resp)
-	if err != nil {
-		msg := fmt.Sprintf("error encoding response %#v to JSON: %v", resp, err)
-		handleError(w, r, http.StatusInternalServerError, msg)
-		return
-	}
-
-	_, err = w.Write(b)
-	if err != nil {
-		log.Printf("error writing response: %v", err)
-	}
+	m.handleEval(q, w, r)
 }
 
 func (m *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
@@ -176,25 +167,7 @@ func (m *server) handleCosNQuery(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, http.StatusInternalServerError, msg)
 		return
 	}
-
-	resp, err := q.Eval(m.Model)
-	if err != nil {
-		msg := fmt.Sprintf("error evaluating query: %v", err)
-		handleError(w, r, http.StatusBadRequest, msg)
-		return
-	}
-
-	b, err := json.Marshal(resp)
-	if err != nil {
-		msg := fmt.Sprintf("error encoding response %#v to JSON: %v", resp, err)
-		handleError(w, r, http.StatusInternalServerError, msg)
-		return
-	}
-
-	_, err = w.Write(b)
-	if err != nil {
-		log.Printf("error writing response: %v", err)
-	}
+	m.handleEval(q, w, r)
 }
 
 // Client is type which implements Coser and evaluates Expr similarity queries
