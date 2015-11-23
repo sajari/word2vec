@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if modelPath == "" {
-		fmt.Println("must specify -p; see -h for more details")
+		fmt.Println("must specify -model; see -h for more details")
 		os.Exit(1)
 	}
 
