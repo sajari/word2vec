@@ -176,37 +176,44 @@ type Client struct {
 	Addr string
 }
 
-// Cos implements Coser.
-func (c Client) Cos(x, y Expr) (float32, error) {
-	req := cosQuery{A: x, B: y}
-
-	b, err := json.Marshal(req)
+func (c Client) fetch(x interface{}, suffix string) ([]byte, error) {
+	b, err := json.Marshal(x)
 	if err != nil {
-		return 0.0, err
+		return nil, err
 	}
 
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cos", bytes.NewReader(b))
+	r, err := http.NewRequest("GET", fmt.Sprintf("http://%s/%s", c.Addr, suffix), bytes.NewReader(b))
 	if err != nil {
-		return 0.0, err
+		return nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
-		return 0.0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0.0, fmt.Errorf("error reading response: %v", err)
-	}
-
 	if resp.StatusCode == http.StatusBadRequest {
-		return 0.0, fmt.Errorf("error: %v", string(b))
+		return nil, fmt.Errorf("error: %v", string(b))
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return 0.0, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(b))
+		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(b))
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+	return body, nil
+}
+
+// Cos implements Coser.
+func (c Client) Cos(x, y Expr) (float32, error) {
+	req := cosQuery{A: x, B: y}
+	body, err := c.fetch(req, "cos")
+	if err != nil {
+		return 0.0, err
 	}
 
 	var data cosResponse
@@ -230,29 +237,9 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 		})
 	}
 
-	b, err := json.Marshal(req)
+	body, err := c.fetch(req, "coses")
 	if err != nil {
 		return nil, err
-	}
-
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/coses", bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.DefaultClient.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-%v status code: %v", http.StatusOK, resp.Status)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
 	var data cosesResponse
@@ -271,34 +258,9 @@ func (c Client) Coses(pairs [][2]Expr) ([]float32, error) {
 // CosN implements Coser.
 func (c Client) CosN(e Expr, n int) ([]Match, error) {
 	req := cosNQuery{Expr: e, N: n}
-
-	b, err := json.Marshal(req)
+	body, err := c.fetch(req, "cos-n")
 	if err != nil {
 		return nil, err
-	}
-
-	r, err := http.NewRequest("GET", "http://"+c.Addr+"/cos-n", bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.DefaultClient.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response: %v", err)
-	}
-
-	if resp.StatusCode == http.StatusBadRequest {
-		return nil, fmt.Errorf("error: %v", string(body))
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-%v status code: %v msg: %v", http.StatusOK, resp.Status, string(body))
 	}
 
 	var data cosNResponse
@@ -306,6 +268,5 @@ func (c Client) CosN(e Expr, n int) ([]Match, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling result: %v", err)
 	}
-
 	return data.Matches, nil
 }
