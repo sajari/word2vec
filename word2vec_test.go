@@ -124,3 +124,20 @@ func TestFromReader(t *testing.T) {
 		t.Errorf("m.CosN(x, 2) = %v, expected: %v", matches, expectedMatches)
 	}
 }
+
+func TestAddWeight(t *testing.T) {
+	x := Expr{}
+	y := Expr{}
+
+	weights := []float32{0.1, 0.2}
+	words := []string{"one", "two"}
+
+	AddWeight(x, weights, words)
+
+	Add(y, 0.1, []string{"one", "two"})
+	Add(y, 0.1, []string{"two"})
+
+	if !reflect.DeepEqual(x, y) {
+		t.Errorf("x = %v, y = %v", x, y)
+	}
+}
