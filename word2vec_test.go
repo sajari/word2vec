@@ -123,6 +123,16 @@ func TestFromReader(t *testing.T) {
 	if !reflect.DeepEqual(matches, expectedMatches) {
 		t.Errorf("m.CosN(x, 2) = %v, expected: %v", matches, expectedMatches)
 	}
+
+	y := Expr{"world": 1.0}
+	expectedCos := float32(0.0)
+	c, err := m.Cos(x, y)
+	if err != nil {
+		t.Errorf("unexpected error from m.Cos(x, y): %v", err)
+	}
+	if c != expectedCos {
+		t.Errorf("Cos(x, y) = %f, expected %f", c, expectedCos)
+	}
 }
 
 func TestAddWeight(t *testing.T) {
