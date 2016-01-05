@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type cosQuery struct {
@@ -201,7 +202,14 @@ func (c Client) fetch(x interface{}, suffix string) ([]byte, error) {
 	}
 
 	if resp.StatusCode == http.StatusBadRequest {
-		return nil, errors.New(string(body))
+		body := string(body)
+		if strings.HasPrefix(body, "error evaluating query: word not found:") {
+			var w string
+			if _, err := fmt.Sscanf(body, "error evaluating query: word not found: %q", &w); err == nil {
+				return nil, NotFoundError{Word: w}
+			}
+		}
+		return nil, errors.New(body)
 	}
 
 	if resp.StatusCode != http.StatusOK {

@@ -93,7 +93,7 @@ type NotFoundError struct {
 }
 
 func (e NotFoundError) Error() string {
-	return fmt.Sprintf("word not found: %v", e.Word)
+	return fmt.Sprintf("word not found: %q", e.Word)
 }
 
 // Expr is a type which represents a linear expresssion of (weight, word) pairs
