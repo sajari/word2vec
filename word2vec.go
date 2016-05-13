@@ -52,11 +52,6 @@ func FromReader(r io.Reader) (*Model, error) {
 
 		v.Normalise()
 
-		_, err = br.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-
 		m.words[w] = v
 	}
 	return m, nil
