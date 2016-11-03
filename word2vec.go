@@ -27,7 +27,7 @@ func FromReader(r io.Reader) (*Model, error) {
 		return nil, err
 	}
 	if n != 2 {
-		return nil, fmt.Errorf("could not extract size/dim from binary Data")
+		return nil, fmt.Errorf("could not extract size/dim from binary model data")
 	}
 
 	m := &Model{
@@ -45,15 +45,13 @@ func FromReader(r io.Reader) (*Model, error) {
 		w = w[:len(w)-1]
 
 		v := Vector(raw[dim*i : m.dim*(i+1)])
-		err = binary.Read(br, binary.LittleEndian, v)
-		if err != nil {
+		if err := binary.Read(br, binary.LittleEndian, v); err != nil {
 			return nil, err
 		}
 
 		v.Normalise()
 
-		_, err = br.ReadByte()
-		if err != nil {
+		if _, err := br.ReadByte(); err != nil {
 			return nil, err
 		}
 
