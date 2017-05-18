@@ -86,7 +86,7 @@ func TestFromReader(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error writing vector")
 		}
-		fmt.Fprintf(buf, " ")
+		fmt.Fprintf(buf, "\n")
 	}
 
 	m, err := FromReader(bytes.NewReader(buf.Bytes()))
