@@ -51,8 +51,13 @@ func FromReader(r io.Reader) (*Model, error) {
 
 		v.Normalise()
 
+		m.words[w] = v
+
 		b, err := br.ReadByte()
 		if err != nil {
+			if i == size-1 && err == io.EOF {
+				break
+			}
 			return nil, err
 		}
 		if b != byte('\n') {
@@ -60,8 +65,6 @@ func FromReader(r io.Reader) (*Model, error) {
 				return nil, err
 			}
 		}
-
-		m.words[w] = v
 	}
 	return m, nil
 }
