@@ -12,11 +12,18 @@ import (
 	"github.com/ziutek/blas"
 )
 
-// Model is a type which represents a word2vec Model and implements the Coser interface.
+// Model is a type which represents a word2vec Model and implements the Coser,
+// Mapper and CosMapper interfaces.
 type Model struct {
 	dim   int
 	words map[string]Vector
 }
+
+var (
+	_ Coser     = (*Model)(nil)
+	_ Mapper    = (*Model)(nil)
+	_ CosMapper = (*Model)(nil)
+)
 
 // FromReader creates a Model using the binary model data provided by the io.Reader.
 func FromReader(r io.Reader) (*Model, error) {
@@ -160,6 +167,19 @@ func (m *Model) Size() int {
 // Dim returns the dimention of the vectors in the model.
 func (m *Model) Dim() int {
 	return m.dim
+}
+
+// Mapper is an interface which defines a method which can return a mapping of
+// word -> Vector for each word in words.
+type Mapper interface {
+	Vectors(words []string) map[string]Vector
+}
+
+// CosMapper is the interface that groups the methods for cosine similarity and
+// word to vector mapping.
+type CosMapper interface {
+	Coser
+	Mapper
 }
 
 // Vectors returns a mapping word -> Vector for each word in `w`,
