@@ -12,17 +12,16 @@ import (
 	"github.com/ziutek/blas"
 )
 
-// Model is a type which represents a word2vec Model and implements the Coser,
-// Mapper and CosMapper interfaces.
+// Model is a type which represents a word2vec Model and implements the Coser
+// and Mapper interfaces.
 type Model struct {
 	dim   int
 	words map[string]Vector
 }
 
 var (
-	_ Coser     = (*Model)(nil)
-	_ Mapper    = (*Model)(nil)
-	_ CosMapper = (*Model)(nil)
+	_ Coser  = (*Model)(nil)
+	_ Mapper = (*Model)(nil)
 )
 
 // FromReader creates a Model using the binary model data provided by the io.Reader.
@@ -172,19 +171,12 @@ func (m *Model) Dim() int {
 // Mapper is an interface which defines a method which can return a mapping of
 // word -> Vector for each word in words.
 type Mapper interface {
-	Vectors(words []string) map[string]Vector
+	Map(words []string) map[string]Vector
 }
 
-// CosMapper is the interface that groups the methods for cosine similarity and
-// word to vector mapping.
-type CosMapper interface {
-	Coser
-	Mapper
-}
-
-// Vectors returns a mapping word -> Vector for each word in `w`,
-// unknown words are ignored.
-func (m *Model) Vectors(words []string) map[string]Vector {
+// Map returns a mapping word -> Vector for each word in `words`.
+// Unknown words are ignored.
+func (m *Model) Map(words []string) map[string]Vector {
 	result := make(map[string]Vector)
 	for _, w := range words {
 		if v, ok := m.words[w]; ok {

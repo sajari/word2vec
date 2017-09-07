@@ -102,9 +102,9 @@ func TestFromReader(t *testing.T) {
 		t.Errorf("m.Dim() = %d, expected 2", m.Dim())
 	}
 
-	mVecs := m.Vectors([]string{"hello", "world"})
+	mVecs := m.Map([]string{"hello", "world"})
 	if !reflect.DeepEqual(vecs, mVecs) {
-		t.Errorf("m.Vectors() = %v, expected %v", mVecs, vecs)
+		t.Errorf("m.Map() = %v, expected %v", mVecs, vecs)
 	}
 
 	x := Expr{"hello": 1.0}
