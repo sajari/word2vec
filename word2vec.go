@@ -1,6 +1,6 @@
 // Package word2vec provides functionality for reading binary word2vec models
 // and performing cosine similarity queries (see https://code.google.com/p/word2vec/).
-package word2vec
+package word2vec // import "code.sajari.com/word2vec"
 
 import (
 	"bufio"
@@ -267,6 +267,26 @@ func (m *Model) cosineN(v Vector, n int) []Match {
 		}
 	}
 	return r
+}
+
+type matchHeap []Match
+
+func (h matchHeap) Len() int           { return len(h) }
+func (h matchHeap) Less(i, j int) bool { return h[i].Score < h[j].Score }
+func (h matchHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *matchHeap) Push(x interface{}) {
+	// Push and Pop use pointer receivers because they modify the slice's length,
+	// not just its contents.
+	*h = append(*h, x.(Match))
+}
+
+func (h *matchHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
 type multiMatches struct {

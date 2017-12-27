@@ -1,6 +1,6 @@
 # word2vec
 [![Build Status](https://travis-ci.org/sajari/word2vec.svg?branch=master)](https://travis-ci.org/sajari/word2vec)
-[![GoDoc](https://godoc.org/github.com/sajari/word2vec?status.svg)](https://godoc.org/github.com/sajari/word2vec)
+[![GoDoc](https://godoc.org/code.sajari.com/word2vec?status.svg)](https://godoc.org/github.com/sajari/word2vec)
 
 word2vec is a Go package which provides functions for querying word2vec models (see [https://code.google.com/p/word2vec](https://code.google.com/p/word2vec)).  Any binary word2vec model file can be loaded and queried.
 
@@ -15,7 +15,7 @@ If you haven't setup Go before, you need to first set a `GOPATH` (see [https://g
 
 To fetch and build the code:
 
-    $ go get github.com/sajari/word2vec/...
+    $ go get code.sajari.com/word2vec/...
 
 This will build the command line tools (in particular `word-calc`, `word-server`, `word-client`) into `$GOPATH/bin` (assumed to be in your `PATH` already).
 
