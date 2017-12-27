@@ -10,17 +10,19 @@ import (
 // particularly useful when using Client.
 func NewCache(c Coser) Coser {
 	return &cache{
-		Coser:    c,
-		cache:    make(map[string]float32),
-		errCache: make(map[string]error),
+		Coser:     c,
+		cache:     make(map[string]float32),
+		errCache:  make(map[string]error),
+		cosnCache: make(map[string][]Match),
 	}
 }
 
 type cache struct {
 	Coser
 
-	errCache map[string]error
-	cache    map[string]float32
+	errCache  map[string]error
+	cache     map[string]float32
+	cosnCache map[string][]Match
 }
 
 func hashExpr(x Expr) string {
@@ -68,4 +70,28 @@ func (c *cache) Cos(x, y Expr) (float32, error) {
 	}
 	c.cache[xh+yh] = f
 	return f, nil
+}
+
+// CosN implements Coser.
+func (c *cache) CosN(e Expr, n int) ([]Match, error) {
+	eh := hashExpr(e)
+	if err, ok := c.errCache[eh]; ok {
+		return nil, err
+	}
+
+	if result, ok := c.cosnCache[eh]; ok {
+		return result, nil
+	}
+
+	result, err := c.Coser.CosN(e, n)
+	if err != nil {
+		if errNotFound, ok := err.(NotFoundError); ok {
+			if _, ok := e[errNotFound.Word]; ok {
+				c.errCache[eh] = err
+			}
+		}
+		return nil, err
+	}
+	c.cosnCache[eh] = result
+	return result, nil
 }
