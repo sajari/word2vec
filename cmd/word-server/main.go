@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ms := word2vec.NewServer(m)
+	ms := word2vec.NewServer(word2vec.NewCache(m))
 
 	log.Printf("Server listening on %v", listen)
 	log.Println("Hit Ctrl-C to quit.")
