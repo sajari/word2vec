@@ -1,6 +1,6 @@
 # word2vec
 [![Build Status](https://travis-ci.org/sajari/word2vec.svg?branch=master)](https://travis-ci.org/sajari/word2vec)
-[![GoDoc](https://godoc.org/code.sajari.com/word2vec?status.svg)](https://godoc.org/github.com/sajari/word2vec)
+[![GoDoc](https://godoc.org/code.sajari.com/word2vec?status.svg)](https://godoc.org/code.sajari.com/word2vec)
 
 word2vec is a Go package which provides functions for querying word2vec models (see [https://code.google.com/p/word2vec](https://code.google.com/p/word2vec)).  Any binary word2vec model file can be loaded and queried.
 
@@ -31,7 +31,7 @@ See `word-calc -h` for full more details.  Note that `word-calc` first loads the
 
 ###  word-server and word-client
 
-The `word-server` tool (see `cmd/word-server`) creates an HTTP server which wraps a word2vec model which can be queried from Go using a [Client](http://godoc.org/github.com/sajari/word2vec#Client), or using the `word-client` tool (see `cmd/word-client`).
+The `word-server` tool (see `cmd/word-server`) creates an HTTP server which wraps a word2vec model which can be queried from Go using a [Client](http://godoc.org/code.sajari.com/word2vec#Client), or using the `word-client` tool (see `cmd/word-client`).
 
     $ word-server -model /path/to/model.bin -listen localhost:1234
 
