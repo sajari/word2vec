@@ -239,6 +239,10 @@ type Match struct {
 // CosN computes the n most similar words to the expression.  Returns an error if the
 // expression could not be evaluated.
 func (m *Model) CosN(e Expr, n int) ([]Match, error) {
+	if n == 0 {
+		return nil, nil
+	}
+
 	v, err := e.Eval(m)
 	if err != nil {
 		return nil, err
@@ -297,6 +301,10 @@ type multiMatches struct {
 // MultiCosN takes a list of expressions and computes the
 // n most similar words for each.
 func MultiCosN(m *Model, exprs []Expr, n int) ([][]Match, error) {
+	if n == 0 {
+		return make([][]Match, len(exprs)), nil
+	}
+
 	vecs := make([]Vector, len(exprs))
 	for i, e := range exprs {
 		v, err := e.Eval(m)
