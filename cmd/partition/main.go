@@ -11,7 +11,7 @@ import (
 	"os"
 	"sort"
 
-	"code.sajari.com/word2vec/partition"
+	"github.com/sajari/word2vec/partition"
 )
 
 var path string

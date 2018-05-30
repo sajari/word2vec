@@ -1,6 +1,6 @@
 // Package word2vec provides functionality for reading binary word2vec models
 // and performing cosine similarity queries (see https://code.google.com/p/word2vec/).
-package word2vec // import "code.sajari.com/word2vec"
+package word2vec
 
 import (
 	"bufio"

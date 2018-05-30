@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"code.sajari.com/word2vec"
+	"github.com/sajari/word2vec"
 )
 
 var path string
