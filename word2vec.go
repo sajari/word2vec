@@ -9,7 +9,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/ziutek/blas"
+	"gonum.org/v1/gonum/blas/blas32"
 )
 
 // Model is a type which represents a word2vec Model and implements the Coser
@@ -80,23 +80,31 @@ type Vector []float32
 
 // Normalise normalises the vector in-place.
 func (v Vector) Normalise() {
-	w := blas.Snrm2(len(v), v, 1)
-	blas.Sscal(len(v), 1/w, v, 1)
+	w := blas32.Nrm2(len(v), blas32.Vector{Inc: 1, Data: v})
+	blas32.Scal(len(v), 1/w, blas32.Vector{Inc: 1, Data: v})
 }
 
 // Norm computes the Euclidean norm of the vector.
 func (v Vector) Norm() float32 {
-	return blas.Snrm2(len(v), v, 1)
+	return blas32.Nrm2(len(v), blas32.Vector{Inc: 1, Data: v})
 }
 
 // Add performs v += a * u (in-place).
 func (v Vector) Add(a float32, u Vector) {
-	blas.Saxpy(len(v), a, u, 1, v, 1)
+	blas32.Axpy(len(v), a, blas32.Vector{Inc: 1, Data: u}, blas32.Vector{Inc: 1, Data: v})
 }
 
 // Dot computes the dot product with u.
 func (v Vector) Dot(u Vector) float32 {
-	return blas.Sdot(len(v), u, 1, v, 1)
+	x := blas32.Vector{
+		Inc:  1,
+		Data: u,
+	}
+	y := blas32.Vector{
+		Inc:  1,
+		Data: v,
+	}
+	return blas32.Dot(len(v), x, y)
 }
 
 // NotFoundError is an error returned from Model functions when an input

@@ -4,9 +4,40 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
+
+	"github.com/ziutek/blas"
+	"gonum.org/v1/gonum/blas/blas32"
 )
+
+func data(n int) []float32 {
+	rand.Seed(10)
+	data := []float32{}
+	for index := 0; index < n; index++ {
+		data = append(data, rand.Float32())
+	}
+	return data
+}
+
+func BenchmarkDotGonumFloat32(b *testing.B) {
+	d := data(300)
+	v := blas32.Vector{Data: d, Inc: 1}
+	u := blas32.Vector{Data: d, Inc: 1}
+	for i := 0; i < b.N; i++ {
+		blas32.Dot(len(v.Data), u, v)
+	}
+}
+
+func BenchmarkDotZiutekFloat32(b *testing.B) {
+	d := data(300)
+	v := Vector(d)
+	u := Vector(d)
+	for i := 0; i < b.N; i++ {
+		blas.Sdot(len(v), u, 1, v, 1)
+	}
+}
 
 func TestVectorAdd(t *testing.T) {
 	tests := []struct {
