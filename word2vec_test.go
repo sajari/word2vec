@@ -24,35 +24,16 @@ func BenchmarkGonumDotFloat32(b *testing.B) {
 	benchmarks := []struct {
 		name string
 		dim  int
-	}{
-		{
-			name: "test with dimension 10",
-			dim:  10,
-		},
-		{
-			name: "test with dimension 50",
-			dim:  50,
-		},
-		{
-			name: "test with dimension 100",
-			dim:  100,
-		},
-		{
-			name: "test with dimension 150",
-			dim:  150,
-		},
-		{
-			name: "test with dimension 200",
-			dim:  200,
-		},
-		{
-			name: "test with dimension 250",
-			dim:  250,
-		},
-		{
-			name: "test with dimension 300",
-			dim:  300,
-		},
+	}{}
+
+	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		benchmarks = append(benchmarks, struct {
+			name string
+			dim  int
+		}{
+			name: fmt.Sprintf("test with dimension %d", dim),
+			dim:  dim,
+		})
 	}
 	for _, bm := range benchmarks {
 		b.Run(bm.name, func(b *testing.B) {
@@ -70,35 +51,15 @@ func BenchmarkZiutekDotFloat32(b *testing.B) {
 	benchmarks := []struct {
 		name string
 		dim  int
-	}{
-		{
-			name: "test with dimension 10",
-			dim:  10,
-		},
-		{
-			name: "test with dimension 50",
-			dim:  50,
-		},
-		{
-			name: "test with dimension 100",
-			dim:  100,
-		},
-		{
-			name: "test with dimension 150",
-			dim:  150,
-		},
-		{
-			name: "test with dimension 200",
-			dim:  200,
-		},
-		{
-			name: "test with dimension 250",
-			dim:  250,
-		},
-		{
-			name: "test with dimension 300",
-			dim:  300,
-		},
+	}{}
+	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		benchmarks = append(benchmarks, struct {
+			name string
+			dim  int
+		}{
+			name: fmt.Sprintf("test with dimension %d", dim),
+			dim:  dim,
+		})
 	}
 	for _, bm := range benchmarks {
 		b.Run(bm.name, func(b *testing.B) {
