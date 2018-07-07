@@ -25,7 +25,6 @@ func BenchmarkGonumDotFloat32(b *testing.B) {
 		name string
 		dim  int
 	}{}
-
 	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
 		benchmarks = append(benchmarks, struct {
 			name string
