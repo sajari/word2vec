@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/ziutek/blas"
-	"gonum.org/v1/gonum/blas/blas32"
 )
 
 func data(n int) []float32 {
@@ -21,21 +20,95 @@ func data(n int) []float32 {
 	return data
 }
 
-func BenchmarkDotGonumFloat32(b *testing.B) {
-	d := data(300)
-	v := blas32.Vector{Data: d, Inc: 1}
-	u := blas32.Vector{Data: d, Inc: 1}
-	for i := 0; i < b.N; i++ {
-		blas32.Dot(len(v.Data), u, v)
+func BenchmarkGonumDotFloat32(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		dim  int
+	}{
+		{
+			name: "test with dimension 10",
+			dim:  10,
+		},
+		{
+			name: "test with dimension 50",
+			dim:  50,
+		},
+		{
+			name: "test with dimension 100",
+			dim:  100,
+		},
+		{
+			name: "test with dimension 150",
+			dim:  150,
+		},
+		{
+			name: "test with dimension 200",
+			dim:  200,
+		},
+		{
+			name: "test with dimension 250",
+			dim:  250,
+		},
+		{
+			name: "test with dimension 300",
+			dim:  300,
+		},
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			d := data(bm.dim)
+			for i := 0; i < b.N; i++ {
+				v := Vector(d)
+				u := Vector(d)
+				v.Dot(u)
+			}
+		})
 	}
 }
 
-func BenchmarkDotZiutekFloat32(b *testing.B) {
-	d := data(300)
-	v := Vector(d)
-	u := Vector(d)
-	for i := 0; i < b.N; i++ {
-		blas.Sdot(len(v), u, 1, v, 1)
+func BenchmarkZiutekDotFloat32(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		dim  int
+	}{
+		{
+			name: "test with dimension 10",
+			dim:  10,
+		},
+		{
+			name: "test with dimension 50",
+			dim:  50,
+		},
+		{
+			name: "test with dimension 100",
+			dim:  100,
+		},
+		{
+			name: "test with dimension 150",
+			dim:  150,
+		},
+		{
+			name: "test with dimension 200",
+			dim:  200,
+		},
+		{
+			name: "test with dimension 250",
+			dim:  250,
+		},
+		{
+			name: "test with dimension 300",
+			dim:  300,
+		},
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			d := data(bm.dim)
+			for i := 0; i < b.N; i++ {
+				v := Vector(d)
+				u := Vector(d)
+				blas.Sdot(len(v), u, 1, v, 1)
+			}
+		})
 	}
 }
 
