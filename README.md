@@ -6,7 +6,7 @@ word2vec is a Go package which provides functions for querying word2vec models (
 
 ## Requirements
 
-- [Go 1.4+](http://golang.org/dl/) (only tested on 1.4+)
+- [Go 1.7+](http://golang.org/dl/) (only tested on 1.7+)
 - A [word2vec](https://code.google.com/p/word2vec) model (binary format)
 
 ## Installation
