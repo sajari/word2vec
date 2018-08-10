@@ -101,23 +101,10 @@ func data(n int) []float32 {
 }
 
 func BenchmarkDotFloat32(b *testing.B) {
-	benchmarks := []struct {
-		name string
-		dim  int
-	}{}
-	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
-		benchmarks = append(benchmarks, struct {
-			name string
-			dim  int
-		}{
-			name: fmt.Sprintf("test with dimension %d", dim),
-			dim:  dim,
-		})
-	}
-	for _, bm := range benchmarks {
-		b.Run(bm.name, func(b *testing.B) {
-			vData := data(bm.dim)
-			uData := data(bm.dim)
+	for _, bm := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		b.Run(fmt.Sprintf("test with dimension %d", bm), func(b *testing.B) {
+			vData := data(bm)
+			uData := data(bm)
 			for i := 0; i < b.N; i++ {
 				v := Vector(vData)
 				u := Vector(uData)
@@ -129,23 +116,20 @@ func BenchmarkDotFloat32(b *testing.B) {
 
 func BenchmarkAddFloat32(b *testing.B) {
 	benchmarks := []struct {
-		name string
-		dim  int
-		a    float32
+		dim int
+		a   float32
 	}{}
 	for i, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
 		benchmarks = append(benchmarks, struct {
-			name string
-			dim  int
-			a    float32
+			dim int
+			a   float32
 		}{
-			name: fmt.Sprintf("test with dimension %d", dim),
-			dim:  dim,
-			a:    float32(i * 10),
+			dim: dim,
+			a:   float32(i * 10),
 		})
 	}
 	for _, bm := range benchmarks {
-		b.Run(bm.name, func(b *testing.B) {
+		b.Run(fmt.Sprintf("test with dimension %d and a %.2f", bm.dim, bm.a), func(b *testing.B) {
 			vData := data(bm.dim)
 			uData := data(bm.dim)
 			for i := 0; i < b.N; i++ {
@@ -158,22 +142,9 @@ func BenchmarkAddFloat32(b *testing.B) {
 }
 
 func BenchmarkNormFloat32(b *testing.B) {
-	benchmarks := []struct {
-		name string
-		dim  int
-	}{}
-	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
-		benchmarks = append(benchmarks, struct {
-			name string
-			dim  int
-		}{
-			name: fmt.Sprintf("test with dimension %d", dim),
-			dim:  dim,
-		})
-	}
-	for _, bm := range benchmarks {
-		b.Run(bm.name, func(b *testing.B) {
-			d := data(bm.dim)
+	for _, bm := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		b.Run(fmt.Sprintf("test with dimension %d", bm), func(b *testing.B) {
+			d := data(bm)
 			for i := 0; i < b.N; i++ {
 				v := Vector(d)
 				v.Norm()
