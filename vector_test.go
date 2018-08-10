@@ -71,6 +71,8 @@ func TestVectorDot(t *testing.T) {
 func BenchmarkDotFloat32(b *testing.B) {
 	for _, bm := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
 		b.Run(fmt.Sprintf("test with dimension %d", bm), func(b *testing.B) {
+			b.ReportAllocs()
+
 			vData := data(bm)
 			uData := data(bm)
 			for i := 0; i < b.N; i++ {
@@ -98,6 +100,8 @@ func BenchmarkAddFloat32(b *testing.B) {
 	}
 	for _, bm := range benchmarks {
 		b.Run(fmt.Sprintf("test with dimension %d and a %.2f", bm.dim, bm.a), func(b *testing.B) {
+			b.ReportAllocs()
+
 			vData := data(bm.dim)
 			uData := data(bm.dim)
 			for i := 0; i < b.N; i++ {
@@ -112,6 +116,8 @@ func BenchmarkAddFloat32(b *testing.B) {
 func BenchmarkNormFloat32(b *testing.B) {
 	for _, bm := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
 		b.Run(fmt.Sprintf("test with dimension %d", bm), func(b *testing.B) {
+			b.ReportAllocs()
+
 			d := data(bm)
 			for i := 0; i < b.N; i++ {
 				v := Vector(d)
