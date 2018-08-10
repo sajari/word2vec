@@ -4,71 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
 )
-
-func TestVectorAdd(t *testing.T) {
-	tests := []struct {
-		x, y, ans []float32
-	}{
-		{
-			x:   []float32{0},
-			y:   []float32{0},
-			ans: []float32{0},
-		},
-	}
-
-	for _, tt := range tests {
-		v := Vector(tt.x)
-		u := Vector(tt.y)
-		v.Add(1.0, u)
-
-		vans := Vector(tt.ans)
-		if !reflect.DeepEqual(v, vans) {
-			t.Errorf("x.Add(y) = %v, expected %v", v, vans)
-		}
-	}
-
-}
-
-func TestVectorDot(t *testing.T) {
-	tests := []struct {
-		x, y []float32
-		ans  float32
-	}{
-		{
-			x:   []float32{0},
-			y:   []float32{0},
-			ans: 0,
-		},
-		{
-			x:   []float32{1},
-			y:   []float32{0},
-			ans: 0,
-		},
-		{
-			x:   []float32{0},
-			y:   []float32{1},
-			ans: 0,
-		},
-		{
-			x:   []float32{1},
-			y:   []float32{1},
-			ans: 1,
-		},
-	}
-
-	for _, tt := range tests {
-		v := Vector(tt.x)
-		u := Vector(tt.y)
-		ans := v.Dot(u)
-
-		if ans != tt.ans {
-			t.Errorf("x.Dot(y) = %v, expected %v", ans, tt.ans)
-		}
-	}
-}
 
 func TestFromReader(t *testing.T) {
 	vecs := map[string]Vector{
@@ -149,5 +88,96 @@ func TestAddWeight(t *testing.T) {
 
 	if !reflect.DeepEqual(x, y) {
 		t.Errorf("x = %v, y = %v", x, y)
+	}
+}
+
+func data(n int) []float32 {
+	rand.Seed(10)
+	data := []float32{}
+	for index := 0; index < n; index++ {
+		data = append(data, rand.Float32())
+	}
+	return data
+}
+
+func BenchmarkDotFloat32(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		dim  int
+	}{}
+	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		benchmarks = append(benchmarks, struct {
+			name string
+			dim  int
+		}{
+			name: fmt.Sprintf("test with dimension %d", dim),
+			dim:  dim,
+		})
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			vData := data(bm.dim)
+			uData := data(bm.dim)
+			for i := 0; i < b.N; i++ {
+				v := Vector(vData)
+				u := Vector(uData)
+				v.Dot(u)
+			}
+		})
+	}
+}
+
+func BenchmarkAddFloat32(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		dim  int
+		a    float32
+	}{}
+	for i, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		benchmarks = append(benchmarks, struct {
+			name string
+			dim  int
+			a    float32
+		}{
+			name: fmt.Sprintf("test with dimension %d", dim),
+			dim:  dim,
+			a:    float32(i * 10),
+		})
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			vData := data(bm.dim)
+			uData := data(bm.dim)
+			for i := 0; i < b.N; i++ {
+				v := Vector(vData)
+				u := Vector(uData)
+				v.Add(bm.a, u)
+			}
+		})
+	}
+}
+
+func BenchmarkNormFloat32(b *testing.B) {
+	benchmarks := []struct {
+		name string
+		dim  int
+	}{}
+	for _, dim := range []int{10, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500} {
+		benchmarks = append(benchmarks, struct {
+			name string
+			dim  int
+		}{
+			name: fmt.Sprintf("test with dimension %d", dim),
+			dim:  dim,
+		})
+	}
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			d := data(bm.dim)
+			for i := 0; i < b.N; i++ {
+				v := Vector(d)
+				v.Norm()
+			}
+		})
 	}
 }
