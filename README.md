@@ -19,13 +19,6 @@ To fetch and build the code:
 
 This will build the command line tools (in particular `word-calc`, `word-server`, `word-client`) into `$GOPATH/bin` (assumed to be in your `PATH` already).
 
-## Benchmarks
-
-For any version above go 1.8 a different BLAS implementation is used, this BLAS implementation is optimised for bigger dimensions. Below is a table of the difference in performance for the BLAS implementations
-
-
-
-
 ## Usage
 
 ### word-calc
