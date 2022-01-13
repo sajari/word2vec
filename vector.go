@@ -3,9 +3,7 @@
 
 package word2vec
 
-import (
-	"math"
-)
+import "math"
 
 // Normalise normalises the vector in-place.
 func (v Vector) Normalise() {
