@@ -21,7 +21,7 @@ func (v Vector) Norm() float32 {
 	for _, vx := range v {
 		out += vx * vx
 	}
-	return math.Sqrt(out)
+	return float32(math.Sqrt(float64(out)))
 }
 
 // Add performs v += a * u (in-place).
