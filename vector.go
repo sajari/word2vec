@@ -26,8 +26,8 @@ func (v Vector) Norm() float32 {
 
 // Add performs v += a * u (in-place).
 func (v Vector) Add(a float32, u Vector) {
-	for i, vx := range v {
-		vx[i] = a * u[i]
+	for i := range v {
+		v[i] += a * u[i]
 	}
 }
 
@@ -35,7 +35,7 @@ func (v Vector) Add(a float32, u Vector) {
 func (v Vector) Dot(u Vector) float32 {
 	var out float32
 	for i, vx := range v {
-		out += u[i] * vx
+		out += vx * u[i]
 	}
 	return out
 }
