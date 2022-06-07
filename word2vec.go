@@ -53,7 +53,7 @@ func FromReader(r io.Reader) (*Model, error) {
 			return nil, err
 		}
 
-		v.Normalise()
+		//v.Normalise()  //remove normalization since dish embedding model needs magnitude as well
 
 		m.words[w] = v
 
