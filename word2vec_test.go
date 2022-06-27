@@ -89,22 +89,11 @@ func TestFromReader(t *testing.T) {
 		fmt.Fprintf(buf, "\n")
 	}
 
-	m, err := FromReader(bytes.NewReader(buf.Bytes()))
+	b := buf.Bytes()
+
+	m, err := FromReader(bytes.NewReader(b))
 	if err != nil {
 		t.Errorf("unexpected error from FromReader: %v", err)
-	}
-
-	if m.Size() != len(vecs) {
-		t.Errorf("m.Size() = %d, expected %d", m.Size(), len(vecs))
-	}
-
-	if m.Dim() != 2 {
-		t.Errorf("m.Dim() = %d, expected 2", m.Dim())
-	}
-
-	mVecs := m.Map([]string{"hello", "world"})
-	if !reflect.DeepEqual(vecs, mVecs) {
-		t.Errorf("m.Map() = %v, expected %v", mVecs, vecs)
 	}
 
 	x := Expr{"hello": 1.0}
@@ -124,14 +113,47 @@ func TestFromReader(t *testing.T) {
 		t.Errorf("m.CosN(x, 2) = %v, expected: %v", matches, expectedMatches)
 	}
 
-	y := Expr{"world": 1.0}
-	expectedCos := float32(0.0)
-	c, err := m.Cos(x, y)
+	l, err := LazyFromReader(bytes.NewReader(b))
 	if err != nil {
-		t.Errorf("unexpected error from m.Cos(x, y): %v", err)
+		t.Errorf("unexpected error from LazyFromReader: %v", err)
 	}
-	if c != expectedCos {
-		t.Errorf("Cos(x, y) = %f, expected %f", c, expectedCos)
+
+	_, err = l.CosN(nil, 0)
+	if err == nil {
+		t.Error("was expecting an error calling CosN on lazy model")
+	}
+
+	_, err = MultiCosN(l, nil, 0)
+	if err == nil {
+		t.Error("was expecting an error calling MultiCosN on lazy model")
+	}
+
+	models := []*Model{m, l}
+
+	for _, m := range models {
+
+		if m.Size() != len(vecs) {
+			t.Errorf("m.Size() = %d, expected %d", m.Size(), len(vecs))
+		}
+
+		if m.Dim() != 2 {
+			t.Errorf("m.Dim() = %d, expected 2", m.Dim())
+		}
+
+		mVecs := m.Map([]string{"hello", "world"})
+		if !reflect.DeepEqual(vecs, mVecs) {
+			t.Errorf("m.Map() = %v, expected %v", mVecs, vecs)
+		}
+
+		y := Expr{"world": 1.0}
+		expectedCos := float32(0.0)
+		c, err := m.Cos(x, y)
+		if err != nil {
+			t.Errorf("unexpected error from m.Cos(x, y): %v", err)
+		}
+		if c != expectedCos {
+			t.Errorf("Cos(x, y) = %f, expected %f", c, expectedCos)
+		}
 	}
 }
 
