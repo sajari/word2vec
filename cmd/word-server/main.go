@@ -14,10 +14,12 @@ import (
 )
 
 var listen, modelPath string
+var lazy bool
 
 func init() {
 	flag.StringVar(&listen, "listen", "localhost:1234", "bind `address` for HTTP server")
 	flag.StringVar(&modelPath, "model", "", "`path` to binary model data")
+	flag.BoolVar(&lazy, "lazy", false, "whether to lazy load model, without cos-n support, defaults to true, which eager load it")
 }
 
 func main() {
@@ -28,7 +30,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Println("Loading model...")
+	if lazy {
+		log.Println("Lazy loading model...")
+	} else {
+		log.Println("Loading model...")
+	}
 	f, err := os.Open(modelPath)
 	if err != nil {
 		fmt.Printf("error opening binary model data file: %v\n", err)
@@ -36,9 +42,16 @@ func main() {
 	}
 	defer f.Close()
 
-	m, err := word2vec.FromReader(f)
+	var m *word2vec.Model
+
+	if lazy {
+		m, err = word2vec.LazyFromReader(f)
+	} else {
+		m, err = word2vec.FromReader(f)
+	}
 	if err != nil {
 		fmt.Printf("error reading binary model data: %v\n", err)
+		f.Close()
 		os.Exit(1)
 	}
 

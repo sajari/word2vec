@@ -5,16 +5,20 @@ package word2vec // import "code.sajari.com/word2vec"
 import (
 	"bufio"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"sync"
 )
 
 // Model is a type which represents a word2vec Model and implements the Coser
 // and Mapper interfaces.
 type Model struct {
-	dim   int
-	words map[string]Vector
+	dim       int
+	words     map[string]Vector
+	lazyWords map[string]int64
+	reader    LazyReader
 }
 
 var (
@@ -22,7 +26,10 @@ var (
 	_ Mapper = (*Model)(nil)
 )
 
-// FromReader creates a Model using the binary model data provided by the io.Reader.
+// FromReader creates a Model using the binary model data provided by the
+// io.Reader. It loads all vectors on memory for faster access and to be able to
+// find n most similar words but uses more memory and takes longer to initialize
+// If you don't need to find n most similar words, consider using LazyFromReader
 func FromReader(r io.Reader) (*Model, error) {
 	br := bufio.NewReader(r)
 	var size, dim int
@@ -56,6 +63,65 @@ func FromReader(r io.Reader) (*Model, error) {
 		v.Normalise()
 
 		m.words[w] = v
+
+		b, err := br.ReadByte()
+		if err != nil {
+			if i == size-1 && err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		if b != byte('\n') {
+			if err := br.UnreadByte(); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return m, nil
+}
+
+const f32Len = 4
+
+type LazyReader interface {
+	io.Reader
+	io.ReaderAt
+}
+
+// LazyFromReader creates a lazy Model using the binary model data provided by
+// the io.Reader. Returns an error on CosN and MultiCosN(Model) If you need CosN
+// and MultiCosN(Model), use FromReader It loads vectors from the underlying
+// io.ReaderAt, usually *os.File, only when needed, making it slower but using
+// less memory and initializing faster
+func LazyFromReader(r LazyReader) (*Model, error) {
+	br := &offsetCounter{reader: bufio.NewReader(r)}
+	var size, dim int
+	n, err := fmt.Fscanln(br, &size, &dim)
+	if err != nil {
+		return nil, err
+	}
+	if n != 2 {
+		return nil, fmt.Errorf("could not extract size/dim from binary model data")
+	}
+
+	m := &Model{
+		lazyWords: make(map[string]int64, size),
+		dim:       dim,
+		reader:    r,
+	}
+
+	for i := 0; i < size; i++ {
+		w, err := br.ReadString(' ')
+		if err != nil {
+			return nil, err
+		}
+		w = w[:len(w)-1]
+
+		m.lazyWords[w] = br.offset
+
+		_, err = br.Discard(dim * f32Len)
+		if err != nil {
+			return nil, err
+		}
 
 		b, err := br.ReadByte()
 		if err != nil {
@@ -137,6 +203,9 @@ type Coser interface {
 
 // Size returns the number of words in the model.
 func (m *Model) Size() int {
+	if m.lazyWords != nil {
+		return len(m.lazyWords)
+	}
 	return len(m.words)
 }
 
@@ -155,9 +224,28 @@ type Mapper interface {
 // Unknown words are ignored.
 func (m *Model) Map(words []string) map[string]Vector {
 	result := make(map[string]Vector)
-	for _, w := range words {
-		if v, ok := m.words[w]; ok {
-			result[w] = v
+	if m.words != nil {
+		for _, w := range words {
+			if v, ok := m.words[w]; ok {
+				result[w] = v
+			}
+		}
+	} else {
+		for _, w := range words {
+			if off, ok := m.lazyWords[w]; ok {
+
+				r := io.NewSectionReader(m.reader, off, int64(m.dim*f32Len))
+
+				v := make(Vector, m.dim)
+				if err := binary.Read(r, binary.LittleEndian, v); err != nil {
+					log.Printf("word2vec: LazyModel.Map read %s %s", w, err) //todo return the error and change the api?
+					continue
+				}
+
+				v.Normalise()
+
+				result[w] = v
+			}
 		}
 	}
 	return result
@@ -196,11 +284,25 @@ func (m *Model) Coses(pairs [][2]Expr) ([]float32, error) {
 func (m *Model) Eval(expr Expr) (Vector, error) {
 	v := Vector(make([]float32, m.dim))
 	for w, c := range expr {
-		u, ok := m.words[w]
-		if !ok {
-			return nil, &NotFoundError{w}
+		if m.words != nil {
+			u, ok := m.words[w]
+			if !ok {
+				return nil, &NotFoundError{w}
+			}
+			v.Add(c, u)
+		} else {
+			off, ok := m.lazyWords[w]
+			if !ok {
+				return nil, &NotFoundError{w}
+			}
+			r := io.NewSectionReader(m.reader, off, int64(m.dim*f32Len))
+
+			u := Vector(make([]float32, m.dim))
+			if err := binary.Read(r, binary.LittleEndian, u); err != nil {
+				return nil, err
+			}
+			v.Add(c, u)
 		}
-		v.Add(c, u)
 	}
 	v.Normalise()
 	return v, nil
@@ -216,6 +318,10 @@ type Match struct {
 // CosN computes the n most similar words to the expression.  Returns an error if the
 // expression could not be evaluated.
 func (m *Model) CosN(e Expr, n int) ([]Match, error) {
+	if m.words == nil {
+		return nil, errors.New("CosN not supported on lazy model")
+	}
+
 	if n == 0 {
 		return nil, nil
 	}
@@ -278,6 +384,11 @@ type multiMatches struct {
 // MultiCosN takes a list of expressions and computes the
 // n most similar words for each.
 func MultiCosN(m *Model, exprs []Expr, n int) ([][]Match, error) {
+
+	if m.words == nil {
+		return nil, errors.New("MultiCosN not supported on lazy model")
+	}
+
 	if n == 0 {
 		return make([][]Match, len(exprs)), nil
 	}
